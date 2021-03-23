@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import numpy as np
-import pyglet, arcade, moderngl, imgui, glm, math, random, struct, time
+import pyglet, moderngl, imgui, glm, math, random, struct, time
 from pyglet import gl
 
 from imgui.integrations.pyglet import PygletProgrammablePipelineRenderer
