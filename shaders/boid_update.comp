@@ -62,9 +62,9 @@ void main() {
 		const vec3 theirForw = In_boids.boids[i].dir;
 
 		// tests
-		vec3 p = theirPos;
-		vec3 v = ourPos;
-		vec3 d = ourDir;
+		const vec3 p = theirPos;
+		const vec3 v = ourPos;
+		const vec3 d = ourDir;
 		float r = dot((p - v)/length(p - v), d/length(d));
 
 		const float sqrDist = distSquared(ourPos, theirPos);
@@ -81,17 +81,17 @@ void main() {
 	}
 
 	// separation
-	ourDir += totalForce * 0.01 * separation_force;
+	ourDir += totalForce * separation_force;
 
 	if (nb_flockmates != 0) {
 		// alignment
 		averageDirection /= nb_flockmates;
-		ourDir += normalize(averageDirection) * 0.03 * alignment_force;
+		ourDir += normalize((averageDirection)) * alignment_force;
 		ourDir = normalize(ourDir);
 
 		// cohesion
 		averagePosition /= nb_flockmates;
-		ourDir += -normalize(ourPos - averagePosition) * 0.07 * cohesion_force;
+		ourDir += -normalize(ourPos - averagePosition) * cohesion_force;
 		ourDir = normalize(ourDir);
 	}
 

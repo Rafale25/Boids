@@ -5,10 +5,8 @@ from boids import MyWindow
 
 def main():
 
-	nb_boids = int(sys.argv[1])
-
 	app = MyWindow(
-		max_boids=nb_boids,
+		max_boids=10000,
 		map_size=50,
 		width=1280,
 		height=720,

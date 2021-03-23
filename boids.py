@@ -43,6 +43,7 @@ class MyWindow(pyglet.window.Window):
 		self.ltime_draw = 0.0;
 
 		self.pause = False
+		self.max_boids = 80_000
 
 		self.map_size = map_size
 		self.boid_count = max_boids
@@ -125,7 +126,11 @@ class MyWindow(pyglet.window.Window):
 		])
 
 		#--------------------------------------------
+
 		self.buffer_1 = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
+
+		# self.buffer_1.write(data=array('f', [0,0,0,0, 1,0,0,0]*self.boid_count), offset=0)
+
 		self.buffer_2 = self.ctx.buffer(reserve=self.buffer_1.size)
 		self.boid_vertices = self.ctx.buffer(data=vertices)
 		self.boid_color = self.ctx.buffer(data=color)
@@ -145,8 +150,6 @@ class MyWindow(pyglet.window.Window):
 			],
 		)
 
-
-
 		self.vao_2 = self.ctx.vertex_array(
 			self.program_boids,
 			[
@@ -157,11 +160,14 @@ class MyWindow(pyglet.window.Window):
 		)
 
 		# --------------------------------------------
-		# Lines + color
+		# border + color
+		self.program_border = self.ctx.program(
+			vertex_shader=read_file("shaders/border.vert"),
+			fragment_shader=read_file("shaders/line.frag"))
+
 		self.program_lines = self.ctx.program(
 			vertex_shader=read_file("shaders/line.vert"),
 			fragment_shader=read_file("shaders/line.frag"))
-
 
 		# --------------------------------------------------------
 		# Compass geometry
@@ -199,49 +205,48 @@ class MyWindow(pyglet.window.Window):
 
 		# --------------------------------------------------------
 		# Borders
-		mp2 = map_size/2
 		vertices = array('f',
 		[
-			-mp2, -mp2, -mp2,
-			mp2, -mp2, -mp2,
+			-0.5, -0.5, -0.5,
+			0.5, -0.5, -0.5,
 
-			-mp2, -mp2, mp2,
-			mp2, -mp2, mp2,
+			-0.5, -0.5, 0.5,
+			0.5, -0.5, 0.5,
 
-			-mp2, mp2, mp2,
-			mp2, mp2, mp2,
+			-0.5, 0.5, 0.5,
+			0.5, 0.5, 0.5,
 
-			-mp2, mp2, -mp2,
-			mp2, mp2, -mp2,
+			-0.5, 0.5, -0.5,
+			0.5, 0.5, -0.5,
 
-			-mp2, -mp2, -mp2,
-			-mp2, mp2, -mp2,
+			-0.5, -0.5, -0.5,
+			-0.5, 0.5, -0.5,
 
-			-mp2, -mp2, mp2,
-			-mp2, mp2, mp2,
+			-0.5, -0.5, 0.5,
+			-0.5, 0.5, 0.5,
 
-			mp2, -mp2, -mp2,
-			mp2, mp2, -mp2,
+			0.5, -0.5, -0.5,
+			0.5, 0.5, -0.5,
 
-			mp2, -mp2, mp2,
-			mp2, mp2, mp2,
+			0.5, -0.5, 0.5,
+			0.5, 0.5, 0.5,
 
-			-mp2, -mp2, -mp2,
-			-mp2, -mp2, mp2,
+			-0.5, -0.5, -0.5,
+			-0.5, -0.5, 0.5,
 
-			-mp2, mp2, -mp2,
-			-mp2, mp2, mp2,
+			-0.5, 0.5, -0.5,
+			-0.5, 0.5, 0.5,
 
-			mp2, -mp2, -mp2,
-			mp2, -mp2, mp2,
+			0.5, -0.5, -0.5,
+			0.5, -0.5, 0.5,
 
-			mp2, mp2, -mp2,
-			mp2, mp2, mp2,
+			0.5, 0.5, -0.5,
+			0.5, 0.5, 0.5,
 		])
 		color = array('f', [0.25, 0.25, 0.25]*24)
 
 		self.borders = self.ctx.vertex_array(
-			self.program_lines,
+			self.program_border,
 			[
 				(self.ctx.buffer(data=vertices), '3f', 'in_vert'),
 				(self.ctx.buffer(data=color), '3f', 'in_color'),
@@ -250,6 +255,9 @@ class MyWindow(pyglet.window.Window):
 
 	def gen_initial_data(self, count):
 		for _ in range(count):
+			# yield 0.0
+			# yield 0.0
+			# yield 0.0
 			yield uniform(-self.map_size/2, self.map_size/2)  # x
 			yield uniform(-self.map_size/2, self.map_size/2)  # y
 			yield uniform(-self.map_size/2, self.map_size/2)  # z
@@ -293,6 +301,7 @@ class MyWindow(pyglet.window.Window):
 
 		mat_perspective = np.array(glm.perspective(-80, aspect_ratio, 0.1, 1000)).flatten()
 		self.program_boids['projection'] = tuple(mat_perspective)
+		self.program_border['projection'] = tuple(mat_perspective)
 		self.program_lines['projection'] = tuple(mat_perspective)
 
 	def set_custom_profile_1(self):
@@ -304,9 +313,47 @@ class MyWindow(pyglet.window.Window):
 		self.cohesion_force=1.0
 		self.view_distance = 2.0;
 
+	def resize_boids_buffer(self, new_count):
+		bytes1 = self.buffer_1.read()[0:new_count * 32]
+		bytes2 = self.buffer_2.read()[0:new_count * 32]
+
+		self.buffer_1.orphan(new_count * 32)
+		self.buffer_2.orphan(new_count * 32)
+
+		if new_count > self.boid_count:
+			b_new_boids = array('f', self.gen_initial_data(new_count - self.boid_count))
+			# print(new_count - self.boid_count)
+			bytes1 += b_new_boids
+			bytes2 += b_new_boids
+
+		self.buffer_1.write(bytes1)
+		self.buffer_2.write(bytes2)
+
+		self.boid_count = new_count
+
 	def gui_newFrame(self):
 		imgui.new_frame()
 		imgui.begin("Properties", True)
+
+		changed, self.pause = imgui.checkbox("Paused", self.pause)
+
+		changed, new_boid_count = imgui.drag_int(
+			label="Boid Count",
+			value=self.boid_count,
+			change_speed=100,
+			min_value=1,
+			max_value=self.max_boids)
+		if changed:
+			self.resize_boids_buffer(new_boid_count)
+
+		changed, self.map_size = imgui.drag_int(
+			label="Map Size",
+			value=self.map_size ,
+			change_speed=0.1,
+			min_value=10,
+			max_value=100,)
+
+		imgui.new_line()
 
 		changed, self.speed = imgui.drag_float(
 			label="Speed",
@@ -356,7 +403,6 @@ class MyWindow(pyglet.window.Window):
 			max_value=10.0,
 			format="%.2f")
 
-		clicked, self.pause = imgui.checkbox("Paused", self.pause)
 
 		imgui.new_line()
 		imgui.begin_group()
@@ -392,11 +438,13 @@ class MyWindow(pyglet.window.Window):
 		modelview = np.array(translate * mat_rotx * mat_roty * mat_rotz).flatten()
 
 		self.program_boids['modelview'] = tuple(modelview)
+		self.program_border['modelview'] = tuple(modelview)
 		self.program_lines['modelview'] = tuple(modelview)
+
+		self.compass.render(mode=moderngl.LINES)
 
 		self.vao_1.render(instances=self.boid_count)
 
-		self.compass.render(mode=moderngl.LINES)
 		self.borders.render(mode=moderngl.LINES)
 
 		self.gui_draw()
@@ -405,8 +453,6 @@ class MyWindow(pyglet.window.Window):
 		# gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
 		# gl.glUseProgram(0)
 		# gl.glBindVertexArray(0)
-		# self.fps_display.draw()
-
 
 	def update(self, dt):
 		# self.fps_update += 1
@@ -416,6 +462,8 @@ class MyWindow(pyglet.window.Window):
 		# 	print("update: %d fps" % self.fps_update)
 		# 	self.fps_update = 0
 
+		self.program_border['map_size'] = self.map_size
+
 		if not (self.pause):
 			self.program_update_boids['boid_count'] = self.boid_count
 			self.program_update_boids['speed'] = self.speed
@@ -423,9 +471,9 @@ class MyWindow(pyglet.window.Window):
 			self.program_update_boids['view_distance'] = self.view_distance
 			self.program_update_boids['view_angle'] = self.view_angle
 
-			self.program_update_boids['separation_force'] = self.separation_force
-			self.program_update_boids['alignment_force'] = self.alignment_force
-			self.program_update_boids['cohesion_force'] = self.cohesion_force
+			self.program_update_boids['separation_force'] = self.separation_force * 0.01
+			self.program_update_boids['alignment_force'] = self.alignment_force * 0.03
+			self.program_update_boids['cohesion_force'] = self.cohesion_force * 0.07
 
 			# query = self.ctx.query(time=True)
 			#
