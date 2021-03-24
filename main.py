@@ -6,7 +6,7 @@ from boids import MyWindow
 def main():
 
 	app = MyWindow(
-		max_boids=10000,
+		max_boids=1000,
 		map_size=50,
 		width=1280,
 		height=720,
