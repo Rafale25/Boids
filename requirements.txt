@@ -1,0 +1,5 @@
+pyglet
+moderngl
+pyglm
+numpy
+imgui[pyglet]

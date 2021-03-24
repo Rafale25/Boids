@@ -1,3 +1,3 @@
-pip3 install pyglet moderngl pyglm numpy imgui[pyglet]
+pip install -r requirements.txt
 
 python3 main.py
