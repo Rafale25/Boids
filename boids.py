@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import platform
 import numpy as np
 import pyglet, moderngl, imgui, glm, math, random, struct, time
 from pyglet import gl
@@ -9,6 +10,13 @@ from imgui.integrations.pyglet import PygletProgrammablePipelineRenderer
 from math import pi, cos, sin
 from random import uniform
 from array import array
+
+# map types
+MAP_CUBE_T		= 0
+MAP_CUBE		= 1
+MAP_SPHERE		= 2
+MAP_SPHERE_T	= 3
+
 
 def read_file(path):
 	data = None
@@ -35,17 +43,49 @@ class MyWindow(pyglet.window.Window):
 
 		self.ctx = moderngl.create_context(require=430)
 
+		if platform.system() == "Darwin":
+			pyglet.options["shadow_window"] = False
+
+		# config = pyglet.gl.Config(
+		# 	major_version=self.gl_version[0],
+		# 	minor_version=self.gl_version[1],
+		# 	forward_compatible=True,
+		# 	depth_size=24,
+		# 	double_buffer=True,
+		# 	sample_buffers=1 if self.samples > 1 else 0,
+		# 	samples=self.samples,
+		# )
+
 		pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
 
-		self.fps_update = 0
-		self.fps_draw = 0
-		self.ltime_update = 0.0;
-		self.ltime_draw = 0.0;
+
+		# fps
+		#define MAXSAMPLES 100
+		# tickindex=0;
+		# ticksum=0;
+		# ticklist = [0]*60
+		#
+		# def CalcAverageTick(newTick)
+		#
+		# double CalcAverageTick(int newtick)
+		# {
+		#     ticksum-=ticklist[tickindex];  /* subtract value falling off */
+		#     ticksum+=newtick;              /* add new value */
+		#     ticklist[tickindex]=newtick;   /* save new value so it can be subtracted later */
+		#     if(++tickindex==MAXSAMPLES)    /* inc buffer index */
+		#         tickindex=0;
+		#
+		#     /* return average */
+		#     return((double)ticksum/MAXSAMPLES);
+		# }
+		#------------
 
 		self.pause = False
 		self.max_boids = 80_000
 
 		self.map_size = map_size
+		self.map_type = MAP_SPHERE_T;
+
 		self.boid_count = max_boids
 		self.view_angle = pi/2
 		self.view_distance = 2.0;
@@ -73,16 +113,17 @@ class MyWindow(pyglet.window.Window):
 			vertex_shader=read_file("shaders/boid.vert"),
 			fragment_shader=read_file("shaders/boid.frag"))
 
-
 		# update boids program -----
-		self.program_update_boids = self.ctx.compute_shader(
-			read_file("shaders/boid_update.comp"))
-
+		self.program_update_boids = [None]*4
+		self.program_update_boids[MAP_CUBE_T] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_cubeT.comp"));
+		self.program_update_boids[MAP_CUBE] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_cube.comp"));
+		self.program_update_boids[MAP_SPHERE_T] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_sphereT.comp"));
+		self.program_update_boids[MAP_SPHERE] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_sphere.comp"));
 
 		# --------------------------------------------------------
 		# Boids geometry
 		pi3 = (2*pi / 3)
-		radius = 1.0
+		radius = 1.2
 
 		vertices = array('f',
 			[
@@ -336,6 +377,18 @@ class MyWindow(pyglet.window.Window):
 		imgui.begin("Properties", True)
 
 		changed, self.pause = imgui.checkbox("Paused", self.pause)
+		imgui.new_line()
+
+		changed, self.map_type = imgui.combo(
+			"Map Type", self.map_type, ["CubeT", "Cube", "Sphere", "SphereT"]
+		)
+
+		changed, self.map_size = imgui.drag_int(
+			label="Map Size",
+			value=self.map_size ,
+			change_speed=0.1,
+			min_value=10,
+			max_value=100,)
 
 		changed, new_boid_count = imgui.drag_int(
 			label="Boid Count",
@@ -345,13 +398,6 @@ class MyWindow(pyglet.window.Window):
 			max_value=self.max_boids)
 		if changed:
 			self.resize_boids_buffer(new_boid_count)
-
-		changed, self.map_size = imgui.drag_int(
-			label="Map Size",
-			value=self.map_size ,
-			change_speed=0.1,
-			min_value=10,
-			max_value=100,)
 
 		imgui.new_line()
 
@@ -442,10 +488,10 @@ class MyWindow(pyglet.window.Window):
 		self.program_lines['modelview'] = tuple(modelview)
 
 		self.compass.render(mode=moderngl.LINES)
-
 		self.vao_1.render(instances=self.boid_count)
 
-		self.borders.render(mode=moderngl.LINES)
+		if (self.map_type == MAP_CUBE or self.map_type == MAP_CUBE_T):
+			self.borders.render(mode=moderngl.LINES)
 
 		self.gui_draw()
 
@@ -455,31 +501,26 @@ class MyWindow(pyglet.window.Window):
 		# gl.glBindVertexArray(0)
 
 	def update(self, dt):
-		# self.fps_update += 1
-		# t = time.time()
-		# if (t - self.ltime_update > 1.0):
-		# 	self.ltime_update = t
-		# 	print("update: %d fps" % self.fps_update)
-		# 	self.fps_update = 0
+		t1 = time.time()
 
 		self.program_border['map_size'] = self.map_size
 
 		if not (self.pause):
-			self.program_update_boids['boid_count'] = self.boid_count
-			self.program_update_boids['speed'] = self.speed
-			self.program_update_boids['map_size'] = self.map_size
-			self.program_update_boids['view_distance'] = self.view_distance
-			self.program_update_boids['view_angle'] = self.view_angle
+			self.program_update_boids[self.map_type]['boid_count'] = self.boid_count
+			self.program_update_boids[self.map_type]['speed'] = self.speed
+			self.program_update_boids[self.map_type]['map_size'] = self.map_size
+			self.program_update_boids[self.map_type]['view_distance'] = self.view_distance
+			self.program_update_boids[self.map_type]['view_angle'] = self.view_angle
 
-			self.program_update_boids['separation_force'] = self.separation_force * 0.01
-			self.program_update_boids['alignment_force'] = self.alignment_force * 0.03
-			self.program_update_boids['cohesion_force'] = self.cohesion_force * 0.07
+			self.program_update_boids[self.map_type]['separation_force'] = self.separation_force * 0.01
+			self.program_update_boids[self.map_type]['alignment_force'] = self.alignment_force * 0.03
+			self.program_update_boids[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
 			# query = self.ctx.query(time=True)
 			#
 			# with query:
 			x = math.ceil(self.boid_count / 512)
-			self.program_update_boids.run(x, 1, 1)
+			self.program_update_boids[self.map_type].run(x, 1, 1)
 			# print("Update boids: %.2f ms\n" % (query.elapsed * 10e-7))
 
 			# print( struct.unpack('{}vf'.format(256 * 8), self.buffer_2.read()) )
@@ -489,6 +530,8 @@ class MyWindow(pyglet.window.Window):
 			self.a, self.b = self.b, self.a
 			self.buffer_1.bind_to_storage_buffer(self.a)
 			self.buffer_2.bind_to_storage_buffer(self.b)
+
+		# t2 = time.time()
 
 	def run(self):
 		pyglet.app.run()
