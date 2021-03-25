@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-import platform
 import numpy as np
 import pyglet, moderngl, imgui, glm, math, random, struct, time
 from pyglet import gl
@@ -16,7 +15,6 @@ MAP_CUBE_T		= 0
 MAP_CUBE		= 1
 MAP_SPHERE		= 2
 MAP_SPHERE_T	= 3
-
 
 def read_file(path):
 	data = None
@@ -43,21 +41,7 @@ class MyWindow(pyglet.window.Window):
 
 		self.ctx = moderngl.create_context(require=430)
 
-		if platform.system() == "Darwin":
-			pyglet.options["shadow_window"] = False
-
-		# config = pyglet.gl.Config(
-		# 	major_version=self.gl_version[0],
-		# 	minor_version=self.gl_version[1],
-		# 	forward_compatible=True,
-		# 	depth_size=24,
-		# 	double_buffer=True,
-		# 	sample_buffers=1 if self.samples > 1 else 0,
-		# 	samples=self.samples,
-		# )
-
 		pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
-
 
 		# fps
 		#define MAXSAMPLES 100
@@ -78,15 +62,14 @@ class MyWindow(pyglet.window.Window):
 		#     /* return average */
 		#     return((double)ticksum/MAXSAMPLES);
 		# }
-		#------------
 
 		self.pause = False
-		self.max_boids = 80_000
+		self.max_boids = max_boids
 
 		self.map_size = map_size
 		self.map_type = MAP_CUBE_T;
 
-		self.boid_count = max_boids
+		self.boid_count = 500
 		self.view_angle = pi/2
 		self.view_distance = 2.0;
 		self.speed = 0.015;
@@ -167,16 +150,11 @@ class MyWindow(pyglet.window.Window):
 		])
 
 		#--------------------------------------------
-
 		self.buffer_1 = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
-
-		# self.buffer_1.write(data=array('f', [0,0,0,0, 1,0,0,0]*self.boid_count), offset=0)
 
 		self.buffer_2 = self.ctx.buffer(reserve=self.buffer_1.size)
 		self.boid_vertices = self.ctx.buffer(data=vertices)
 		self.boid_color = self.ctx.buffer(data=color)
-
-
 
 		self.buffer_1.bind_to_storage_buffer(0)
 		self.buffer_2.bind_to_storage_buffer(1)
