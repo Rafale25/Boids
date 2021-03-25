@@ -84,7 +84,7 @@ class MyWindow(pyglet.window.Window):
 		self.max_boids = 80_000
 
 		self.map_size = map_size
-		self.map_type = MAP_SPHERE_T;
+		self.map_type = MAP_CUBE_T;
 
 		self.boid_count = max_boids
 		self.view_angle = pi/2
@@ -465,13 +465,6 @@ class MyWindow(pyglet.window.Window):
 
 	def on_draw(self):
 		self.gui_newFrame()
-
-		# self.fps_draw += 1
-		# t = time.time()
-		# if (t - self.ltime_draw > 1.0):
-		# 	self.ltime_draw = t
-		# 	print("draw: %d fps" % self.fps_draw)
-		# 	self.fps_draw = 0
 
 		self.ctx.clear()
 		# self.ctx.clear(0.0/255, 20.0/255, 60.0/255)
