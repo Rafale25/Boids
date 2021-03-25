@@ -474,6 +474,7 @@ class MyWindow(pyglet.window.Window):
 		# 	self.fps_draw = 0
 
 		self.ctx.clear()
+		# self.ctx.clear(0.0/255, 20.0/255, 60.0/255)
 		self.ctx.enable_only(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
 		mat_rotx = glm.rotate(glm.mat4(1.0), -self.camera_roty, glm.vec3(1.0, 0.0, 0.0))

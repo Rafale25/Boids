@@ -13,7 +13,7 @@ def main():
 		caption="Boids Simulation 3D",
 		fullscreen=False,
 		resizable=True,
-		vsync=True
+		vsync=False
 	).run()
 
 
