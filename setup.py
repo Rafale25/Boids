@@ -8,5 +8,5 @@ setup(
 	author='Rafale25',
 	author_email='narchalpaul@yahoo.fr',
 	license='MIT',
-	packages=['sys', 'pyglet', 'moderngl', 'imgui', 'glm', 'math', 'random', 'struct', 'time', 'platform', 'numpy', 'imgui.integrations.pyglet', 'array'],
+	packages=['pyglet', 'moderngl', 'imgui', 'glm', 'time', 'platform', 'numpy', 'imgui.integrations.pyglet'],
 	zip_safe=False)
