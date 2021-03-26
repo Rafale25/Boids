@@ -64,10 +64,10 @@ class MyWindow(pyglet.window.Window):
 		# }
 
 		self.pause = False
-		self.max_boids = max_boids
 
+		self.max_boids = max_boids
 		self.map_size = map_size
-		self.map_type = MAP_CUBE_T;
+		self.map_type = MAP_CUBE;
 
 		self.boid_count = 500
 		self.view_angle = pi/2
@@ -280,6 +280,7 @@ class MyWindow(pyglet.window.Window):
 			yield uniform(-self.map_size/2, self.map_size/2)  # x
 			yield uniform(-self.map_size/2, self.map_size/2)  # y
 			yield uniform(-self.map_size/2, self.map_size/2)  # z
+
 			yield 42.0 # fuck that shit
 
 			dir = random_uniform_vec3()
@@ -301,7 +302,7 @@ class MyWindow(pyglet.window.Window):
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		self.camera_z += scroll_y
-		self.camera_z = fclamp(self.camera_z, -self.map_size*2, 0.0)
+		self.camera_z = fclamp(self.camera_z, -self.map_size*3.0, 0.0)
 
 	def on_key_press(self, symbol, modifiers):
 		if (symbol == pyglet.window.key.ESCAPE):
@@ -477,7 +478,13 @@ class MyWindow(pyglet.window.Window):
 
 		self.program_border['map_size'] = self.map_size
 
-		if not (self.pause):
+		# for i in range(self.boid_count):
+		# bytes = self.buffer_1.read()[0:32]
+		# data = struct.unpack('8f', bytes)
+		# print(data)
+		# print( struct.unpack('{}vf'.format(256 * 8), self.buffer_2.read()) )
+
+		if not self.pause:
 			self.program_update_boids[self.map_type]['boid_count'] = self.boid_count
 			self.program_update_boids[self.map_type]['speed'] = self.speed
 			self.program_update_boids[self.map_type]['map_size'] = self.map_size
@@ -489,7 +496,7 @@ class MyWindow(pyglet.window.Window):
 			self.program_update_boids[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
 			# query = self.ctx.query(time=True)
-			#
+
 			# with query:
 			x = math.ceil(self.boid_count / 512)
 			self.program_update_boids[self.map_type].run(x, 1, 1)

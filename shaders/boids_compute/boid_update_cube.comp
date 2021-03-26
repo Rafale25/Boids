@@ -51,27 +51,27 @@ void main() {
 	vec3 ourDir = In_boids.boids[id].dir;
 
 	int nb_flockmates = 0;
-	vec3 averageDirection = vec3(0.0, 0.0, 0.0);
-	vec3 averagePosition = vec3(0.0, 0.0, 0.0);
-	vec3 totalForce = vec3(0.0, 0.0, 0.0); // test, delete this later
+	vec3 averageDirection =	vec3(0.0, 0.0, 0.0);
+	vec3 averagePosition =	vec3(0.0, 0.0, 0.0);
+	vec3 totalForce =		vec3(0.0, 0.0, 0.0); // test, delete this later
 
 	for (int i = 0 ; i < boid_count ; ++i) {
 		if (id == i) continue; // don't check if itself
 
 		const vec3 theirPos = In_boids.boids[i].pos;
-		const vec3 theirForw = In_boids.boids[i].dir;
+		const vec3 theirDir = In_boids.boids[i].dir;
 
 		// tests
 		const vec3 p = theirPos;
 		const vec3 v = ourPos;
 		const vec3 d = ourDir;
-		float r = dot((p - v)/length(p - v), d/length(d));
+		const float r = dot((p - v)/length(p - v), d/length(d));
 
 		const float sqrDist = distSquared(ourPos, theirPos);
 		if (sqrDist < view_distance * view_distance) {
 			if (length(acos(r)) <= view_angle) {
 				nb_flockmates += 1;
-				averageDirection += theirForw;
+				averageDirection += theirDir;
 				averagePosition += theirPos;
 
 				// separation
@@ -86,34 +86,15 @@ void main() {
 	if (nb_flockmates != 0) {
 		// alignment
 		averageDirection /= nb_flockmates;
-		ourDir += normalize((averageDirection)) * alignment_force;
-		ourDir = normalize(ourDir);
+		ourDir += averageDirection * alignment_force;
 
 		// cohesion
 		averagePosition /= nb_flockmates;
-		ourDir += -normalize(ourPos - averagePosition) * cohesion_force;
-		ourDir = normalize(ourDir);
+		ourDir += -(ourPos - averagePosition) * cohesion_force;
 	}
 
 	// border limit
-	// const float map_size2 = map_size/2;
-	// if (ourPos.x < -map_size2)
-	// 	ourPos.x = map_size2;
-	// else if (ourPos.x > map_size2)
-	// 	ourPos.x = -map_size2;
-	//
-	// if (ourPos.y < -map_size2)
- 	// 	ourPos.y = map_size2;
- 	// else if (ourPos.y > map_size2)
- 	// 	ourPos.y = -map_size2;
-	//
- 	// if (ourPos.z < -map_size2)
- 	// 	ourPos.z = map_size2;
- 	// else if (ourPos.z > map_size2)
- 	// 	ourPos.z = -map_size2;
-
-	vec3 np = ourPos + (ourDir * speed);
-
+	const vec3 np = ourPos + (ourDir * speed);
 	const float mp2 = map_size * 0.5;
 	if (np.x < -mp2 || np.x > mp2 || np.y < -mp2 || np.y > mp2 || np.z < -mp2 || np.z > mp2) {
 		const vec3 to_center = normalize(vec3(0, 0, 0) - ourPos);

@@ -4,6 +4,7 @@ import sys, pyglet, platform
 from boids import MyWindow
 
 def main():
+
 	if platform.system() == "Darwin":
 		pyglet.options["shadow_window"] = False
 
@@ -28,7 +29,6 @@ def main():
 		vsync=False,
 		config=config
 	).run()
-
 
 if __name__ == "__main__":
 	main()
