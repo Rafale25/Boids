@@ -333,6 +333,15 @@ class MyWindow(pyglet.window.Window):
 		self.cohesion_force=1.0
 		self.view_distance = 2.0;
 
+	def set_custom_profile_2(self):
+		self.speed=0.050
+		self.view_distance=2.0
+		self.view_angle=2.08
+		self.separation_force=0.59
+		self.alignment_force=1.87
+		self.cohesion_force=1.34
+		self.view_distance = 2.0;
+
 	def resize_boids_buffer(self, new_count):
 		bytes1 = self.buffer_1.read()[0:new_count * 32]
 		bytes2 = self.buffer_2.read()[0:new_count * 32]
@@ -434,6 +443,8 @@ class MyWindow(pyglet.window.Window):
 		imgui.text("Custom profiles:")
 		if (imgui.button("Profile 1")):
 			self.set_custom_profile_1()
+		if (imgui.button("Profile 2")):
+			self.set_custom_profile_2()
 		imgui.end_group()
 
 		imgui.end()
