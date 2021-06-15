@@ -40,7 +40,6 @@ class MyWindow(pyglet.window.Window):
 		super(MyWindow, self).__init__(*args, **kwaargs)
 
 		self.ctx = moderngl.create_context(require=430)
-
 		pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
 
 		# fps
@@ -71,7 +70,7 @@ class MyWindow(pyglet.window.Window):
 
 		self.boid_count = 500
 		self.view_angle = pi/2
-		self.view_distance = 2.0;
+		self.view_distance = 2.0
 		self.speed = 0.015;
 
 		self.separation_force = 1.0
@@ -89,7 +88,6 @@ class MyWindow(pyglet.window.Window):
 		# ImGui --
 		imgui.create_context()
 		self.impl = PygletProgrammablePipelineRenderer(self)
-
 
 		# Boid -----
 		self.program_boids = self.ctx.program(
@@ -280,7 +278,6 @@ class MyWindow(pyglet.window.Window):
 			yield uniform(-self.map_size/2, self.map_size/2)  # x
 			yield uniform(-self.map_size/2, self.map_size/2)  # y
 			yield uniform(-self.map_size/2, self.map_size/2)  # z
-
 			yield 42.0 # fuck that shit
 
 			dir = random_uniform_vec3()
