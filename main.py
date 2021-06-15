@@ -5,8 +5,8 @@ from boids import MyWindow
 
 def main():
 
-	# if platform.system() == "Darwin":
-	# 	pyglet.options["shadow_window"] = False
+	if platform.system() == "Darwin":
+		pyglet.options["shadow_window"] = False
 
 	config = pyglet.gl.Config(
 		major_version=4,
@@ -27,7 +27,7 @@ def main():
 		fullscreen=False,
 		resizable=True,
 		vsync=False,
-		# config=config
+		config=config
 	).run()
 
 if __name__ == "__main__":
