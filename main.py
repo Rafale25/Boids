@@ -19,7 +19,7 @@ def main():
 	)
 
 	app = MyWindow(
-		max_boids=40_000,
+		max_boids=100_000,
 		map_size=50,
 		width=1280,
 		height=720,
