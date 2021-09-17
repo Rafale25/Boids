@@ -92,7 +92,6 @@ class MyWindow(pyglet.window.Window):
 
 		# --------------------------------------------------------
 		# Boids geometry
-		
 
 		pi3 = (2*pi / 3)
 		radius = 1.2
@@ -148,6 +147,8 @@ class MyWindow(pyglet.window.Window):
 		self.buffer_1.bind_to_storage_buffer(0)
 		self.buffer_2.bind_to_storage_buffer(1)
 		# ----------------------------------------------
+
+		# self.vao = self.obj.root_nodes[0].mesh.vao.instance(self.prog)
 
 		self.vao_1 = self.ctx.vertex_array(
 			self.program_boids,
