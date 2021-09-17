@@ -51,26 +51,6 @@ class MyWindow(pyglet.window.Window):
 		self.ctx = moderngl.create_context(require=430)
 		pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
 
-		# fps
-		#define MAXSAMPLES 100
-		# tickindex=0;
-		# ticksum=0;
-		# ticklist = [0]*60
-		#
-		# def CalcAverageTick(newTick)
-		#
-		# double CalcAverageTick(int newtick)
-		# {
-		#     ticksum-=ticklist[tickindex];  /* subtract value falling off */
-		#     ticksum+=newtick;              /* add new value */
-		#     ticklist[tickindex]=newtick;   /* save new value so it can be subtracted later */
-		#     if(++tickindex==MAXSAMPLES)    /* inc buffer index */
-		#         tickindex=0;
-		#
-		#     /* return average */
-		#     return((double)ticksum/MAXSAMPLES);
-		# }
-
 		self.pause = False
 
 		self.max_boids = max_boids
@@ -112,6 +92,8 @@ class MyWindow(pyglet.window.Window):
 
 		# --------------------------------------------------------
 		# Boids geometry
+		
+
 		pi3 = (2*pi / 3)
 		radius = 1.2
 
