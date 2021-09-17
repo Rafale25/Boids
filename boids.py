@@ -1,14 +1,23 @@
 #! /usr/bin/python3
 
 import numpy as np
-import pyglet, moderngl, imgui, glm, math, random, struct, time
-from pyglet import gl
-
-from imgui.integrations.pyglet import PygletProgrammablePipelineRenderer
+import math
+import random
+import struct
+import time
 
 from math import pi, cos, sin
 from random import uniform
 from array import array
+
+from pyglet import gl
+
+import pyglet
+import moderngl
+import imgui
+import glm
+
+from imgui.integrations.pyglet import PygletProgrammablePipelineRenderer
 
 # map types
 MAP_CUBE_T		= 0
@@ -260,7 +269,7 @@ class MyWindow(pyglet.window.Window):
 			0.5, 0.5, -0.5,
 			0.5, 0.5, 0.5,
 		])
-		color = array('f', [0.25, 0.25, 0.25]*24)
+		color = array('f', [0.30, 0.30, 0.30]*24)
 
 		self.borders = self.ctx.vertex_array(
 			self.program_border,
@@ -433,7 +442,6 @@ class MyWindow(pyglet.window.Window):
 			min_value=0.0,
 			max_value=10.0,
 			format="%.2f")
-
 
 		imgui.new_line()
 		imgui.begin_group()
