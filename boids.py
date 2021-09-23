@@ -48,6 +48,8 @@ class MyWindow(pyglet.window.Window):
 		super(MyWindow, self).__init__(*args, **kwaargs)
 
 		self.ctx = moderngl.create_context(require=430)
+		# self.ctx.gc_mode = "auto"
+
 		pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
 
 		self.pause = False
@@ -149,21 +151,12 @@ class MyWindow(pyglet.window.Window):
 
 		# self.vao = self.obj.root_nodes[0].mesh.vao.instance(self.prog)
 
-		self.vao_1 = self.ctx.vertex_array(
+		self.vao = self.ctx.vertex_array(
 			self.program_boids,
 			[
 				(self.boid_vertices, '3f', 'in_vert'),
 				(self.boid_color, '3f', 'in_color'),
 				(self.buffer_1, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
-			],
-		)
-
-		self.vao_2 = self.ctx.vertex_array(
-			self.program_boids,
-			[
-				(self.boid_vertices, '3f', 'in_vert'),
-				(self.boid_color, '3f', 'in_color'),
-				(self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
 			],
 		)
 
@@ -456,7 +449,7 @@ class MyWindow(pyglet.window.Window):
 		self.program_lines['modelview'].write(modelview)
 
 		self.compass.render(mode=moderngl.LINES)
-		self.vao_1.render(instances=self.boid_count)
+		self.vao.render(instances=self.boid_count)
 
 		if (self.map_type == MAP_CUBE or self.map_type == MAP_CUBE_T):
 			self.borders.render(mode=moderngl.LINES)
@@ -495,15 +488,27 @@ class MyWindow(pyglet.window.Window):
 			# with query:
 			x = math.ceil(self.boid_count / 512)
 			self.program_update_boids[self.map_type].run(x, 1, 1)
+
 			# print("Update boids: %.2f ms\n" % (query.elapsed * 10e-7))
-
 			# print( struct.unpack('{}vf'.format(256 * 8), self.buffer_2.read()) )
-
-			self.vao_1, self.vao_2 = self.vao_2, self.vao_1
 
 			self.a, self.b = self.b, self.a
 			self.buffer_1.bind_to_storage_buffer(self.a)
 			self.buffer_2.bind_to_storage_buffer(self.b)
 
+	def cleanup(self):
+		print("Cleaning up ressources.")
+		self.buffer_1.release()
+		self.buffer_2.release()
+		self.borders.release()
+		self.compass.release()
+		self.program_boids.release()
+		self.boid_vertices.release()
+		self.boid_color.release()
+		self.vao.release()
+		self.program_border.release()
+		self.program_lines.release()
+
 	def run(self):
 		pyglet.app.run()
+		self.cleanup()
