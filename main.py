@@ -15,12 +15,12 @@ def main():
 		depth_size=24,
 		double_buffer=True,
 		sample_buffers=1,
-		samples=0,
+		samples=4,
 	)
 
 	app = MyWindow(
 		max_boids=100_000,
-		map_size=50,
+		map_size=30,
 		width=1280,
 		height=720,
 		caption="Boids Simulation 3D",

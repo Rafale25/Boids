@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-import numpy as np
 import math
 import random
 import struct
@@ -57,7 +56,7 @@ class MyWindow(pyglet.window.Window):
 		self.map_size = map_size
 		self.map_type = MAP_CUBE;
 
-		self.boid_count = 500
+		self.boid_count = 1000
 		self.view_angle = pi/2
 		self.view_distance = 2.0
 		self.speed = 0.015;
@@ -278,9 +277,6 @@ class MyWindow(pyglet.window.Window):
 			yield dir[2]  # fz
 			yield 69.0 # fuck that too
 
-	# def on_mouse_motion(self, x, y, dx, dy):
-	# 	pass
-
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		if (buttons == pyglet.window.mouse.RIGHT):
 			self.camera_rotx += dx * 0.002
@@ -306,12 +302,13 @@ class MyWindow(pyglet.window.Window):
 	def on_resize(self, width, height): # is called at start
 		# Set up viewport and projection
 		self.ctx.viewport = 0, 0, int(width), int(height)
-		aspect_ratio = width / height
 
-		mat_perspective = np.array(glm.perspective(-80, aspect_ratio, 0.1, 1000)).flatten()
-		self.program_boids['projection'] = tuple(mat_perspective)
-		self.program_border['projection'] = tuple(mat_perspective)
-		self.program_lines['projection'] = tuple(mat_perspective)
+		aspect_ratio = width / height
+		mat_perspective = glm.perspective(-80, aspect_ratio, 0.1, 1000)
+
+		self.program_boids['projection'].write(mat_perspective)
+		self.program_border['projection'].write(mat_perspective)
+		self.program_lines['projection'].write(mat_perspective)
 
 	def set_custom_profile_1(self):
 		self.speed=0.020
@@ -445,7 +442,6 @@ class MyWindow(pyglet.window.Window):
 		self.gui_newFrame()
 
 		self.ctx.clear()
-		# self.ctx.clear(0.0/255, 20.0/255, 60.0/255)
 		self.ctx.enable_only(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
 		mat_rotx = glm.rotate(glm.mat4(1.0), -self.camera_roty, glm.vec3(1.0, 0.0, 0.0))
@@ -453,11 +449,11 @@ class MyWindow(pyglet.window.Window):
 		mat_rotz = glm.rotate(glm.mat4(1.0), 0.0, glm.vec3(0.0, 0.0, 1.0))
 
 		translate = glm.translate(glm.mat4(1.0), glm.vec3(0.0, 0.0, self.camera_z))
-		modelview = np.array(translate * mat_rotx * mat_roty * mat_rotz).flatten()
+		modelview = translate * mat_rotx * mat_roty * mat_rotz
 
-		self.program_boids['modelview'] = tuple(modelview)
-		self.program_border['modelview'] = tuple(modelview)
-		self.program_lines['modelview'] = tuple(modelview)
+		self.program_boids['modelview'].write(modelview)
+		self.program_border['modelview'].write(modelview)
+		self.program_lines['modelview'].write(modelview)
 
 		self.compass.render(mode=moderngl.LINES)
 		self.vao_1.render(instances=self.boid_count)
@@ -509,15 +505,5 @@ class MyWindow(pyglet.window.Window):
 			self.buffer_1.bind_to_storage_buffer(self.a)
 			self.buffer_2.bind_to_storage_buffer(self.b)
 
-		# t2 = time.time()
-
 	def run(self):
 		pyglet.app.run()
-		# while True:
-		# 	pyglet.clock.tick()
-		#
-		# 	self.switch_to()
-		# 	self.dispatch_events()
-		# 	# self.dispatch_event('on_draw')
-		# 	# self.on_draw()
-		# 	self.flip()
