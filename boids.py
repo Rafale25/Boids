@@ -151,12 +151,21 @@ class MyWindow(pyglet.window.Window):
 
 		# self.vao = self.obj.root_nodes[0].mesh.vao.instance(self.prog)
 
-		self.vao = self.ctx.vertex_array(
+		self.vao_1 = self.ctx.vertex_array(
 			self.program_boids,
 			[
 				(self.boid_vertices, '3f', 'in_vert'),
 				(self.boid_color, '3f', 'in_color'),
 				(self.buffer_1, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
+			],
+		)
+
+		self.vao_2 = self.ctx.vertex_array(
+			self.program_boids,
+			[
+				(self.boid_vertices, '3f', 'in_vert'),
+				(self.boid_color, '3f', 'in_color'),
+				(self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
 			],
 		)
 
@@ -449,7 +458,7 @@ class MyWindow(pyglet.window.Window):
 		self.program_lines['modelview'].write(modelview)
 
 		self.compass.render(mode=moderngl.LINES)
-		self.vao.render(instances=self.boid_count)
+		self.vao_1.render(instances=self.boid_count)
 
 		if (self.map_type == MAP_CUBE or self.map_type == MAP_CUBE_T):
 			self.borders.render(mode=moderngl.LINES)
@@ -492,6 +501,7 @@ class MyWindow(pyglet.window.Window):
 			# print("Update boids: %.2f ms\n" % (query.elapsed * 10e-7))
 			# print( struct.unpack('{}vf'.format(256 * 8), self.buffer_2.read()) )
 
+			self.vao_1, self.vao_2 = self.vao_2, self.vao_1
 			self.a, self.b = self.b, self.a
 			self.buffer_1.bind_to_storage_buffer(self.a)
 			self.buffer_2.bind_to_storage_buffer(self.b)
@@ -505,7 +515,8 @@ class MyWindow(pyglet.window.Window):
 		self.program_boids.release()
 		self.boid_vertices.release()
 		self.boid_color.release()
-		self.vao.release()
+		self.vao_1.release()
+		self.vao_2.release()
 		self.program_border.release()
 		self.program_lines.release()
 
