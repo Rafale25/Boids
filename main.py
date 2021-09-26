@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import sys, pyglet, platform
-from boids import MyWindow
+from src.boids import MyWindow
 
 def main():
 
