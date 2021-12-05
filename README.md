@@ -23,7 +23,3 @@ https://youtu.be/lZUsVdE_Lps
 ![Alt text](./screenshots/screenshot5.png?raw=true)
 
 ![Alt text](./screenshots/screenshot6.png?raw=true)
-
-![Alt text](./screenshots/screenshot7.png?raw=true)
-
-![Alt text](./screenshots/screenshot8.png?raw=true)
