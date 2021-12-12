@@ -1,5 +1,10 @@
 #version 430
 
+#define CUBE 0
+#define CUBE_T 0
+#define SPHERE 0
+#define SPHERE_T 0
+
 layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 struct Boid {
@@ -94,17 +99,16 @@ void main() {
     }
 
     // border limit
-    #ifdef CUBE
-
+    #if (CUBE == 1)
         const vec3 np = ourPos + (ourDir * speed);
         const float mp2 = map_size * 0.5;
         if (np.x < -mp2 || np.x > mp2 || np.y < -mp2 || np.y > mp2 || np.z < -mp2 || np.z > mp2) {
             const vec3 to_center = normalize(vec3(0, 0, 0) - ourPos);
             ourDir += to_center * 0.1;
         }
+    #endif
 
-    #elif CUBE_T
-
+    #if (CUBE_T == 1)
         const float map_size2 = map_size/2;
         if (ourPos.x < -map_size2)
             ourPos.x = map_size2;
@@ -120,19 +124,20 @@ void main() {
             ourPos.z = map_size2;
         else if (ourPos.z > map_size2)
             ourPos.z = -map_size2;
+    #endif
 
-    #elif SPHERE
+    #if (SPHERE == 1)
 
         if (length(ourPos) > map_size) {
             const vec3 to_center = normalize(vec3(0, 0, 0) - ourPos);
             ourDir += to_center * 0.1;
         }
+    #endif
 
-    #elif SPHERE_T
+    #if (SPHERE_T == 1)
         if (length(ourPos) > map_size) {
             ourPos = -normalize(ourPos) * map_size;
         }
-
     #endif
 
     Out_boids.boids[id].pos = ourPos;

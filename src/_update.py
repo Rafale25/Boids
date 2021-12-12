@@ -1,10 +1,9 @@
-import time
 from math import ceil
 
 def update(self, time_since_start, frametime):
-    t1 = time.time()
-
     if not self.pause:
+        self.program['BORDER']['map_size'] = self.map_size
+
         self.program[self.map_type]['boid_count'] = self.boid_count
         self.program[self.map_type]['speed'] = self.speed
         self.program[self.map_type]['map_size'] = self.map_size
@@ -15,14 +14,8 @@ def update(self, time_since_start, frametime):
         self.program[self.map_type]['alignment_force'] = self.alignment_force * 0.03
         self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
-        # query = self.ctx.query(time=True)
-
-        # with query:
         x = ceil(self.boid_count / 512)
         self.program[self.map_type].run(x, 1, 1)
-
-        # print("Update boids: %.2f ms\n" % (query.elapsed * 10e-7))
-        # print( struct.unpack('{}vf'.format(256 * 8), self.buffer_2.read()) )
 
         self.vao_1, self.vao_2 = self.vao_2, self.vao_1
         self.a, self.b = self.b, self.a

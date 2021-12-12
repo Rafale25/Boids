@@ -10,10 +10,10 @@ def render(self, time_since_start, frametime):
     self.ctx.enable_only(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
     for _, program in self.program.items():
-        if 'modelview' in program:
-            program['modelview'].write(self.camera.matrix)
-        if 'projection' in program:
-            program['projection'].write(self.camera.projection.matrix)
+        if 'u_viewMatrix' in program:
+            program['u_viewMatrix'].write(self.camera.matrix)
+        if 'u_projectionMatrix' in program:
+            program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
     self.compass.render(program=self.program['LINES'])
     self.vao_1.render(instances=self.boid_count)

@@ -15,8 +15,6 @@ import moderngl_window
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene import KeyboardCamera
 from moderngl_window.scene.camera import OrbitCamera
-
-
 from moderngl_window.opengl.vao import VAO
 
 from pathlib import Path
@@ -32,7 +30,6 @@ class MyWindow(moderngl_window.WindowConfig):
     fullscreen = False
     resizable = True
     vsync = True
-    # resource_dir = './'
     resource_dir = Path(__file__).parent.parent.resolve()
     print(resource_dir)
 
@@ -59,7 +56,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.camera = OrbitCamera(
             target=(0., 0., 0.),
-            radius=2.0,
+            radius=self.map_size,
             angles=(-90, -90),
             fov=60.0,
             aspect_ratio=self.wnd.aspect_ratio,
@@ -77,31 +74,31 @@ class MyWindow(moderngl_window.WindowConfig):
         self.program = {
             'BOIDS':
                 self.load_program(
-                    vertex_shader='./shaders/boid.vert',
-                    fragment_shader='./shaders/boid.frag'),
+                    vertex_shader='./shaders/boids/boid.vert',
+                    fragment_shader='./shaders/boids/boid.frag'),
             'BORDER':
                 self.load_program(
-                    vertex_shader='./shaders/border.vert',
-                    fragment_shader='./shaders/line.frag'),
+                    vertex_shader='./shaders/border/border.vert',
+                    fragment_shader='./shaders/border/border.frag'),
             'LINES':
                 self.load_program(
-                    vertex_shader='./shaders/line.vert',
-                    fragment_shader='./shaders/line.frag'),
+                    vertex_shader='./shaders/line/line.vert',
+                    fragment_shader='./shaders/line/line.frag'),
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids_compute/boid_update_cube.comp',
-                    defines={'CUBE_T': 'CUBE_T'}),
+                    path='./shaders/boids/boid_update.comp',
+                    defines={'CUBE_T': 1}),
             MapType.MAP_CUBE:
                 self.load_compute_shader(
-                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'CUBE': 1}),
             MapType.MAP_SPHERE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'SPHERE_T': 1}),
             MapType.MAP_SPHERE:
                 self.load_compute_shader(
-                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'SPHERE': 1}),
         }
 
@@ -162,14 +159,14 @@ class MyWindow(moderngl_window.WindowConfig):
 
         # self.vbo = self.ctx.buffer(vertices)
         # self.vao_1 = VAO(mode=moderngl.TRIANGLES)
-        # self.vao_1.buffer(self.boid_vertices, '3f', ['in_vert'])
+        # self.vao_1.buffer(self.boid_vertices, '3f', ['in_position'])
         # self.vao_1.buffer(self.boid_color, '3f', ['in_color'])
         # self.vao_1.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
 
         self.vao_1 = self.ctx.vertex_array(
             self.program['BOIDS'],
             [
-                (self.boid_vertices, '3f', 'in_vert'),
+                (self.boid_vertices, '3f', 'in_position'),
                 (self.boid_color, '3f', 'in_color'),
                 (self.buffer_1, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
             ],
@@ -178,7 +175,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.vao_2 = self.ctx.vertex_array(
             self.program['BOIDS'],
             [
-                (self.boid_vertices, '3f', 'in_vert'),
+                (self.boid_vertices, '3f', 'in_position'),
                 (self.boid_color, '3f', 'in_color'),
                 (self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
             ],
@@ -211,9 +208,8 @@ class MyWindow(moderngl_window.WindowConfig):
         ])
 
         self.compass = VAO(mode=moderngl.LINES)
-        self.compass.buffer(self.ctx.buffer(vertices), '3f', ['in_vert'])
+        self.compass.buffer(self.ctx.buffer(vertices), '3f', ['in_position'])
         self.compass.buffer(self.ctx.buffer(color), '3f', ['in_color'])
-
 
         # --------------------------------------------------------
         # Borders
@@ -258,7 +254,7 @@ class MyWindow(moderngl_window.WindowConfig):
         color = array('f', [0.30, 0.30, 0.30]*24)
 
         self.borders = VAO(mode=moderngl.LINES)
-        self.borders.buffer(self.ctx.buffer(vertices), '3f', ['in_vert'])
+        self.borders.buffer(self.ctx.buffer(vertices), '3f', ['in_position'])
         self.borders.buffer(self.ctx.buffer(color), '3f', ['in_color'])
 
     def gen_initial_data(self, count):
