@@ -10,8 +10,8 @@ out vec3 v_color;
 
 void main()
 {
-	vec4 pos = projection * modelview * vec4(in_vert, 1.0);
+    vec4 pos = projection * modelview * vec4(in_vert, 1.0);
 
-	gl_Position = pos;
-	v_color = in_color;
+    gl_Position = pos;
+    v_color = in_color;
 }

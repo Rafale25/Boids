@@ -1,39 +1,43 @@
 from math import pi
 
 import glm
-import pyglet
+import imgui
 
 from utils import *
 
-def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-	if (buttons == pyglet.window.mouse.RIGHT):
-		self.camera_rotx += dx * 0.002
-		self.camera_roty += dy * 0.002
+def resize(self, width: int, height: int):
+    self.imgui.resize(width, height)
+    self.camera.projection.update(aspect_ratio=self.wnd.aspect_ratio)
 
-		self.camera_rotx %= 2*pi
-		self.camera_roty = fclamp(self.camera_roty, -pi/2, pi/2)
+def key_event(self, key, action, modifiers):
+    self.imgui.key_event(key, action, modifiers)
 
-def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-	self.camera_z += scroll_y
-	self.camera_z = fclamp(self.camera_z, -self.map_size*3.0, 0.0)
+    if action == self.wnd.keys.ACTION_PRESS:
+        if key == self.wnd.keys.SPACE:
+            self.pause = not self.pause
 
-def on_key_press(self, symbol, modifiers):
-	if (symbol == pyglet.window.key.ESCAPE):
-		self.close()
+def mouse_position_event(self, x, y, dx, dy):
+    self.imgui.mouse_position_event(x, y, dx, dy)
 
-	if (symbol == pyglet.window.key.SPACE):
-		if (self.pause):
-			self.pause = False
-		else:
-			self.pause = True
 
-def on_resize(self, width, height): # is called at start
-	# Set up viewport and projection
-	self.ctx.viewport = 0, 0, int(width), int(height)
+def mouse_drag_event(self, x, y, dx, dy):
+    self.imgui.mouse_drag_event(x, y, dx, dy)
 
-	aspect_ratio = width / height
-	mat_perspective = glm.perspective(-80, aspect_ratio, 0.1, 1000)
+    io = imgui.get_io()
+    if io.want_capture_mouse: return
 
-	self.program_boids['projection'].write(mat_perspective)
-	self.program_border['projection'].write(mat_perspective)
-	self.program_lines['projection'].write(mat_perspective)
+    self.camera.rot_state(dx, dy)
+
+def mouse_scroll_event(self, x_offset, y_offset):
+    self.imgui.mouse_scroll_event(x_offset, y_offset)
+
+    self.camera.zoom_state(y_offset)
+
+def mouse_press_event(self, x, y, button):
+    self.imgui.mouse_press_event(x, y, button)
+
+def mouse_release_event(self, x: int, y: int, button: int):
+    self.imgui.mouse_release_event(x, y, button)
+
+def unicode_char_entered(self, char):
+    self.imgui.unicode_char_entered(char)

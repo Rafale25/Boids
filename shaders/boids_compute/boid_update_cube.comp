@@ -19,7 +19,7 @@ layout(std430, binding=1) writeonly buffer boids_out {
 
 uniform int boid_count;
 uniform float speed;
-uniform float map_size;
+uniform float map_size = 0;
 uniform float view_distance;
 uniform float view_angle;
 
@@ -94,7 +94,7 @@ void main() {
     }
 
     // border limit
-    // #ifdef CUBE
+    #ifdef CUBE
 
         const vec3 np = ourPos + (ourDir * speed);
         const float mp2 = map_size * 0.5;
@@ -103,37 +103,37 @@ void main() {
             ourDir += to_center * 0.1;
         }
 
-    // #elif CUBE_T
-    //
-    //     const float map_size2 = map_size/2;
-    //     if (ourPos.x < -map_size2)
-    //         ourPos.x = map_size2;
-    //     else if (ourPos.x > map_size2)
-    //         ourPos.x = -map_size2;
-    //
-    //     if (ourPos.y < -map_size2)
-    //         ourPos.y = map_size2;
-    //     else if (ourPos.y > map_size2)
-    //         ourPos.y = -map_size2;
-    //
-    //     if (ourPos.z < -map_size2)
-    //         ourPos.z = map_size2;
-    //     else if (ourPos.z > map_size2)
-    //         ourPos.z = -map_size2;
-    //
-    // #elif SPHERE
-    //
-    //     if (length(ourPos) > map_size) {
-    //         const vec3 to_center = normalize(vec3(0, 0, 0) - ourPos);
-    //         ourDir += to_center * 0.1;
-    //     }
-    //
-    // #elif SPHERE_T
-    //     if (length(ourPos) > map_size) {
-    //         ourPos = -normalize(ourPos) * map_size;
-    //     }
-    //
-    // #endif
+    #elif CUBE_T
+
+        const float map_size2 = map_size/2;
+        if (ourPos.x < -map_size2)
+            ourPos.x = map_size2;
+        else if (ourPos.x > map_size2)
+            ourPos.x = -map_size2;
+
+        if (ourPos.y < -map_size2)
+            ourPos.y = map_size2;
+        else if (ourPos.y > map_size2)
+            ourPos.y = -map_size2;
+
+        if (ourPos.z < -map_size2)
+            ourPos.z = map_size2;
+        else if (ourPos.z > map_size2)
+            ourPos.z = -map_size2;
+
+    #elif SPHERE
+
+        if (length(ourPos) > map_size) {
+            const vec3 to_center = normalize(vec3(0, 0, 0) - ourPos);
+            ourDir += to_center * 0.1;
+        }
+
+    #elif SPHERE_T
+        if (length(ourPos) > map_size) {
+            ourPos = -normalize(ourPos) * map_size;
+        }
+
+    #endif
 
     Out_boids.boids[id].pos = ourPos;
     Out_boids.boids[id].dir = normalize(ourDir);

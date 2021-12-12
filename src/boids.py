@@ -11,33 +11,39 @@ import moderngl
 import imgui
 import glm
 
-from imgui.integrations.pyglet import PygletProgrammablePipelineRenderer
+import moderngl_window
+from moderngl_window.integrations.imgui import ModernglWindowRenderer
+from moderngl_window.scene import KeyboardCamera
+from moderngl_window.scene.camera import OrbitCamera
+
+
+from moderngl_window.opengl.vao import VAO
+
+from pathlib import Path
 
 from utils import *
 
 from src._mapType import MapType
 
-# class BoidConfig:
-#     Max = 100_000
-#     N = 1000
-#
-# class MapConfig:
-#     size = 25
-#     type = MapType.MAP_CUBE
+class MyWindow(moderngl_window.WindowConfig):
+    title = 'Boids Simulation 3D'
+    gl_version = (4, 3)
+    window_size = (1280, 720)
+    fullscreen = False
+    resizable = True
+    vsync = True
+    # resource_dir = './'
+    resource_dir = Path(__file__).parent.parent.resolve()
+    print(resource_dir)
 
-class MyWindow(pyglet.window.Window):
-    def __init__(self, max_boids, map_size, *args, **kwaargs):
-        super(MyWindow, self).__init__(*args, **kwaargs)
-
-        self.ctx = moderngl.create_context(require=430)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         # self.ctx.gc_mode = "auto"
-
-        pyglet.clock.schedule_interval(self.update, 1.0 / 144.0)
 
         self.pause = False
 
-        self.max_boids = max_boids
-        self.map_size = map_size
+        self.max_boids = 50_000
+        self.map_size = 20
         self.map_type = MapType.MAP_CUBE;
 
         self.boid_count = 1000
@@ -49,45 +55,60 @@ class MyWindow(pyglet.window.Window):
         self.alignment_force = 1.0
         self.cohesion_force = 1.0
 
-        self.camera_z = -8.0
-        self.camera_rotx = 0.0
-        self.camera_roty = 0.0
+        self.a, self.b = 0, 1
 
-        self.a = 0
-        self.b = 1
+        self.camera = OrbitCamera(
+            target=(0., 0., 0.),
+            radius=2.0,
+            angles=(-90, -90),
+            fov=60.0,
+            aspect_ratio=self.wnd.aspect_ratio,
+            near=0.1,
+            far=200.0,
+        )
+        self.camera.mouse_sensitivity = 1.0
+        self.camera.zoom_sensitivity = 0.5
 
         # ImGui --
         imgui.create_context()
-        self.impl = PygletProgrammablePipelineRenderer(self)
+        self.imgui = ModernglWindowRenderer(self.wnd)
 
         # Boid -----
-        self.program_boids = self.ctx.program(
-            vertex_shader=read_file("shaders/boid.vert"),
-            fragment_shader=read_file("shaders/boid.frag"))
+        self.program = {
+            'BOIDS':
+                self.load_program(
+                    vertex_shader='./shaders/boid.vert',
+                    fragment_shader='./shaders/boid.frag'),
+            'BORDER':
+                self.load_program(
+                    vertex_shader='./shaders/border.vert',
+                    fragment_shader='./shaders/line.frag'),
+            'LINES':
+                self.load_program(
+                    vertex_shader='./shaders/line.vert',
+                    fragment_shader='./shaders/line.frag'),
+            MapType.MAP_CUBE_T:
+                self.load_compute_shader(
+                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    defines={'CUBE_T': 'CUBE_T'}),
+            MapType.MAP_CUBE:
+                self.load_compute_shader(
+                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    defines={'CUBE': 1}),
+            MapType.MAP_SPHERE_T:
+                self.load_compute_shader(
+                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    defines={'SPHERE_T': 1}),
+            MapType.MAP_SPHERE:
+                self.load_compute_shader(
+                    path='./shaders/boids_compute/boid_update_cube.comp',
+                    defines={'SPHERE': 1}),
+        }
 
-        # print(MapType.MAP_CUBE_T)
-        # exit()
-
-        # update boids program -----
-        self.program_update_boids = [None]*4
-        self.program_update_boids[MapType.MAP_CUBE_T] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_cubeT.comp"));
-        self.program_update_boids[MapType.MAP_CUBE] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_cube.comp"));
-        self.program_update_boids[MapType.MAP_SPHERE_T] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_sphereT.comp"));
-        self.program_update_boids[MapType.MAP_SPHERE] = self.ctx.compute_shader(read_file("shaders/boids_compute/boid_update_sphere.comp"));
-        #
-        # self.program = {
-        #     MapType.MAP_CUBE_T:
-        #         self.load_program(
-        #             vertex_shader='./shaders/model/shader.vert',
-        #             fragment_shader='./shaders/model/shader.frag'),
-        # }
-
-        # --------------------------------------------------------
-        # Boids geometry
-
+        ## --------------------------------------------------------
+        ## Boids geometry
         pi3 = (2*pi / 3)
         radius = 1.2
-
         vertices = array('f',
             [
                 # back triangle
@@ -131,7 +152,6 @@ class MyWindow(pyglet.window.Window):
 
         #--------------------------------------------
         self.buffer_1 = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
-
         self.buffer_2 = self.ctx.buffer(reserve=self.buffer_1.size)
         self.boid_vertices = self.ctx.buffer(data=vertices)
         self.boid_color = self.ctx.buffer(data=color)
@@ -140,8 +160,14 @@ class MyWindow(pyglet.window.Window):
         self.buffer_2.bind_to_storage_buffer(1)
         # ----------------------------------------------
 
+        # self.vbo = self.ctx.buffer(vertices)
+        # self.vao_1 = VAO(mode=moderngl.TRIANGLES)
+        # self.vao_1.buffer(self.boid_vertices, '3f', ['in_vert'])
+        # self.vao_1.buffer(self.boid_color, '3f', ['in_color'])
+        # self.vao_1.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
+
         self.vao_1 = self.ctx.vertex_array(
-            self.program_boids,
+            self.program['BOIDS'],
             [
                 (self.boid_vertices, '3f', 'in_vert'),
                 (self.boid_color, '3f', 'in_color'),
@@ -150,23 +176,13 @@ class MyWindow(pyglet.window.Window):
         )
 
         self.vao_2 = self.ctx.vertex_array(
-            self.program_boids,
+            self.program['BOIDS'],
             [
                 (self.boid_vertices, '3f', 'in_vert'),
                 (self.boid_color, '3f', 'in_color'),
                 (self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
             ],
         )
-
-        # --------------------------------------------
-        # border + color
-        self.program_border = self.ctx.program(
-            vertex_shader=read_file("shaders/border.vert"),
-            fragment_shader=read_file("shaders/line.frag"))
-
-        self.program_lines = self.ctx.program(
-            vertex_shader=read_file("shaders/line.vert"),
-            fragment_shader=read_file("shaders/line.frag"))
 
         # --------------------------------------------------------
         # Compass geometry
@@ -194,13 +210,10 @@ class MyWindow(pyglet.window.Window):
             0.0, 1.0, 1.0,
         ])
 
-        self.compass = self.ctx.vertex_array(
-            self.program_lines,
-            [
-                (self.ctx.buffer(data=vertices), '3f', 'in_vert'),
-                (self.ctx.buffer(data=color), '3f', 'in_color'),
-            ],
-        )
+        self.compass = VAO(mode=moderngl.LINES)
+        self.compass.buffer(self.ctx.buffer(vertices), '3f', ['in_vert'])
+        self.compass.buffer(self.ctx.buffer(color), '3f', ['in_color'])
+
 
         # --------------------------------------------------------
         # Borders
@@ -244,13 +257,9 @@ class MyWindow(pyglet.window.Window):
         ])
         color = array('f', [0.30, 0.30, 0.30]*24)
 
-        self.borders = self.ctx.vertex_array(
-            self.program_border,
-            [
-                (self.ctx.buffer(data=vertices), '3f', 'in_vert'),
-                (self.ctx.buffer(data=color), '3f', 'in_color'),
-            ],
-        )
+        self.borders = VAO(mode=moderngl.LINES)
+        self.borders.buffer(self.ctx.buffer(vertices), '3f', ['in_vert'])
+        self.borders.buffer(self.ctx.buffer(color), '3f', ['in_color'])
 
     def gen_initial_data(self, count):
         for _ in range(count):
@@ -266,15 +275,11 @@ class MyWindow(pyglet.window.Window):
             yield 69.0 # fuck that too
 
     from src._resize_buffer import resize_boids_buffer
-    from src._events import on_mouse_drag, on_mouse_scroll, on_key_press, on_resize
+    from src._events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
     from src._custom_profiles import set_custom_profile_1, set_custom_profile_2
     from src._gui import gui_newFrame, gui_draw
 
-    from src._on_draw import on_draw
+    from src._render import render
     from src._update import update
 
     from src._cleanup import cleanup
-
-    def run(self):
-        pyglet.app.run()
-        self.cleanup()
