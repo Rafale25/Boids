@@ -3,86 +3,50 @@
 layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 struct Boid {
-	vec3 pos;
-	float a; // useless as fuck
-	vec3 forw;
-	float b; // useless as fuck
+    vec3 pos;
+    float a; // useless as fuck
+    vec3 dir;
+    float b; // useless as fuck
 };
 
 struct Hash {
-	uint cell_index;
-	uint boid_index;
+    uint cell_id;
+    uint boid_id;
 };
 
-layout(std430, binding=0) buffer boids_in {
-	Boid boids[];
-} In_boids;
+layout(std430, binding=0) buffer buffer_boids {
+    Boid b_boid[];
+};
 
-layout(std430, binding=2) buffer unsorted_list_out {
-	Hash unsorted_list[];
-} Out_unsorted_list;
+layout(std430, binding=1) buffer buffer_unsorted {
+    Hash b_unsorted[];
+};
 
-layout(std430, binding=3) buffer sorted_list_out {
-	Hash sorted_list[];
-} Out_sorted_list;
+layout(std430, binding=2) buffer buffer_sorted {
+    Hash b_sorted[];
+};
 
-layout(std430, binding=4) buffer cell_index_nb_out {
-	int cell_index_nb[];
-} Out_cell_index_nb;
+layout(std430, binding=3) buffer buffer_cell_start {
+    uint cell_start[];
+};
 
-layout(std430, binding=5) buffer Cell_start_out {
-	uint cell_start[];
-} Out_cell_start;
-
-float map(float value, float min1, float max1, float min2, float max2) {
-	return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
-
-uniform int SH_size;
 uniform int boid_count;
 uniform float map_size;
 
+uniform int SH_size;
+// example: SH_size = 8 -> 8*8*8 = 512
+
 void main() {
-	const uint boid_index = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
-							gl_GlobalInvocationID.y * gl_NumWorkGroups.x +
-							gl_GlobalInvocationID.x * 1;
+    const uint id = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
+                    gl_GlobalInvocationID.y * gl_NumWorkGroups.x +
+                    gl_GlobalInvocationID.x;
 
-	if (boid_index >= boid_count) {
-		return;
-	}
+    if (id >= boid_count) return;
+    Boid boid = b_boid[id];
 
-	const Boid boid = In_boids.boids[boid_index];
+    uint cell_id = 0;// = getCellId();
+    b_unsorted[id].cell_id = cell_id;
+    b_unsorted[id].boid_id = id;
 
-	const ivec3 cell_index3 = ivec3((boid.pos+(map_size/2)) / (map_size/SH_size));
-
-	uint cell_index = int((cell_index3.z) * (SH_size * SH_size) + ((cell_index3.y) * SH_size) + (cell_index3.x));
-	//cell_index = clamp(cell_index, 0, uint(SH_size*SH_size*SH_size - 1)); // maybe not useful
-
-	Out_unsorted_list.unsorted_list[boid_index].boid_index = boid_index;
-	Out_unsorted_list.unsorted_list[boid_index].cell_index = cell_index;
-
-
-	// ------------ Memory Barrier -----------------
-	memoryBarrierShared();	// Ensure change are visible in other invocations
-	barrier();				// Stall until every thread reached this point
-
-
-	// sort algorithm here --------
-	int sorted_index = 0;
-
-	for (int i = 0; i < boid_count ; ++i) {
-		if (i == boid_index) continue;
-		if (Out_unsorted_list.unsorted_list[i].cell_index < Out_unsorted_list.unsorted_list[boid_index].cell_index) {
-			sorted_index += 1;
-		}
-	}
-
-	const int offset = atomicAdd(Out_cell_index_nb.cell_index_nb[cell_index], 1);
-
-	Out_sorted_list.sorted_list[sorted_index + offset].cell_index = Out_unsorted_list.unsorted_list[boid_index].cell_index;
-	Out_sorted_list.sorted_list[sorted_index + offset].boid_index = boid_index;
-
-	if (offset == 0) {
-		Out_cell_start.cell_start[cell_index] = sorted_index;
-	}
+    // sort b_unsorted into b_sorted by cell_id
 }

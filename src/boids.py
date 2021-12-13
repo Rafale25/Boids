@@ -30,14 +30,15 @@ class MyWindow(moderngl_window.WindowConfig):
     fullscreen = False
     resizable = True
     vsync = True
-    resource_dir = Path(__file__).parent.parent.resolve()
-    print(resource_dir)
+    resource_dir = (Path(__file__) / "../../assets").resolve()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.ctx.gc_mode = "auto"
 
         self.pause = False
+
+        # Is there any community "gameJam" with pyglet, Arcade or ModernGL ?
 
         self.max_boids = 50_000
         self.map_size = 20
@@ -66,11 +67,16 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
 
-        # ImGui --
+        ## Debug
+        self.fps_counter = FpsCounter()
+        self.query_debug_values = {}
+        self.query = self.ctx.query(samples=False, time=True)
+
+        ## ImGui --
         imgui.create_context()
         self.imgui = ModernglWindowRenderer(self.wnd)
 
-        # Boid -----
+        ## Boid -----
         self.program = {
             'BOIDS':
                 self.load_program(
@@ -84,6 +90,11 @@ class MyWindow(moderngl_window.WindowConfig):
                 self.load_program(
                     vertex_shader='./shaders/line/line.vert',
                     fragment_shader='./shaders/line/line.frag'),
+
+            'SPATIAL_HASH':
+                self.load_compute_shader(
+                    path='./shaders/boids/boid_spatialHash.comp'),
+
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
                     path='./shaders/boids/boid_update.comp',
@@ -102,8 +113,8 @@ class MyWindow(moderngl_window.WindowConfig):
                     defines={'SPHERE': 1}),
         }
 
+        ## Boids
         ## --------------------------------------------------------
-        ## Boids geometry
         pi3 = (2*pi / 3)
         radius = 1.2
         vertices = array('f',
@@ -147,7 +158,6 @@ class MyWindow(moderngl_window.WindowConfig):
             0, 1, 1,
         ])
 
-        #--------------------------------------------
         self.buffer_1 = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
         self.buffer_2 = self.ctx.buffer(reserve=self.buffer_1.size)
         self.boid_vertices = self.ctx.buffer(data=vertices)
@@ -155,7 +165,6 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.buffer_1.bind_to_storage_buffer(0)
         self.buffer_2.bind_to_storage_buffer(1)
-        # ----------------------------------------------
 
         # self.vbo = self.ctx.buffer(vertices)
         # self.vao_1 = VAO(mode=moderngl.TRIANGLES)
@@ -181,8 +190,18 @@ class MyWindow(moderngl_window.WindowConfig):
             ],
         )
 
-        # --------------------------------------------------------
-        # Compass geometry
+        ## Spatial Hash
+        ## --------------------------------------------------------
+        self.SH_size = 4
+
+        size = 4 * 2 * self.boid_count #4*2*1000 = 8000 #len(self.buffer_unsorted.read()) == 8000
+        self.buffer_unsorted = self.ctx.buffer(reserve=size)
+        self.buffer_sorted = self.ctx.buffer(reserve=size)
+        self.buffer_cell_start = self.ctx.buffer(reserve=self.SH_size**3)
+
+
+        ## Compass
+        ## --------------------------------------------------------
         vertices = array('f',
         [
             0.0, 0.0, 0.0,
@@ -211,8 +230,9 @@ class MyWindow(moderngl_window.WindowConfig):
         self.compass.buffer(self.ctx.buffer(vertices), '3f', ['in_position'])
         self.compass.buffer(self.ctx.buffer(color), '3f', ['in_color'])
 
-        # --------------------------------------------------------
-        # Borders
+
+        ## --------------------------------------------------------
+        ## Borders
         vertices = array('f',
         [
             -0.5, -0.5, -0.5,

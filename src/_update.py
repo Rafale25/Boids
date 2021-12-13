@@ -1,6 +1,12 @@
 from math import ceil
 
 def update(self, time_since_start, frametime):
+    for _, program in self.program.items():
+        if 'u_viewMatrix' in program:
+            program['u_viewMatrix'].write(self.camera.matrix)
+        if 'u_projectionMatrix' in program:
+            program['u_projectionMatrix'].write(self.camera.projection.matrix)
+
     if not self.pause:
         self.program['BORDER']['map_size'] = self.map_size
 
@@ -15,7 +21,16 @@ def update(self, time_since_start, frametime):
         self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
         x = ceil(self.boid_count / 512)
-        self.program[self.map_type].run(x, 1, 1)
+
+        # TODO: bind buffer_sorted and buffer_unsorted
+
+        # with self.query:
+        # self.program['SPATIAL_HASH'].run(x, 1, 1)
+        # self.query_debug_values['Spatial Hash'] = self.query.elapsed * 10e-7
+
+        with self.query:
+            self.program[self.map_type].run(x, 1, 1)
+        self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
 
         self.vao_1, self.vao_2 = self.vao_2, self.vao_1
         self.a, self.b = self.b, self.a
