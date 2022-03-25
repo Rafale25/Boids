@@ -34,6 +34,7 @@ layout(std430, binding=5) buffer Cell_start_out {
     uint cell_start[];
 } Out_cell_start;
 
+
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
@@ -65,7 +66,6 @@ void main() {
     // ------------ Memory Barrier -----------------
     memoryBarrierShared();    // Ensure change are visible in other invocations
     barrier();                // Stall until every thread reached this point
-
 
     // sort algorithm here --------
     int sorted_index = 0;

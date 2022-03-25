@@ -1,7 +1,7 @@
 import moderngl
 import glm
 
-from src._mapType import MapType
+from _mapType import MapType
 
 def render(self, time_since_start, frametime):
     self.fps_counter.update(frametime)

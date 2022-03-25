@@ -6,7 +6,7 @@ from math import pi, cos, sin, ceil
 from random import uniform
 from array import array
 
-import pyglet
+# import pyglet
 import moderngl
 import imgui
 import glm
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from utils import *
 
-from src._mapType import MapType
+from _mapType import MapType
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -40,14 +40,15 @@ class MyWindow(moderngl_window.WindowConfig):
 
         # Is there any community "gameJam" with pyglet, Arcade or ModernGL ?
 
-        self.max_boids = 50_000
+        self.min_boids = 512
+        self.max_boids = 512 * 100
         self.map_size = 20
         self.map_type = MapType.MAP_CUBE;
 
-        self.boid_count = 1000
+        self.boid_count = 512*2
         self.view_angle = pi/2
         self.view_distance = 2.0
-        self.speed = 0.015;
+        self.speed = 0.0 #0.050
 
         self.separation_force = 1.0
         self.alignment_force = 1.0
@@ -72,9 +73,11 @@ class MyWindow(moderngl_window.WindowConfig):
         self.query_debug_values = {}
         self.query = self.ctx.query(samples=False, time=True)
 
+
         ## ImGui --
         imgui.create_context()
         self.imgui = ModernglWindowRenderer(self.wnd)
+
 
         ## Boid -----
         self.program = {
@@ -91,25 +94,29 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/line/line.vert',
                     fragment_shader='./shaders/line/line.frag'),
 
-            'SPATIAL_HASH':
+            'SPATIAL_HASH_1':
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_spatialHash.comp'),
+                    path='./shaders/boids/boid_spatialHash1.comp'),
+            'SPATIAL_HASH_2':
+                self.load_compute_shader(
+                    path='./shaders/boids/boid_spatialHash2.comp'),
+
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update.comp',
+                    path='./shaders/boids/boid_update_withHash.comp',
                     defines={'CUBE_T': 1}),
             MapType.MAP_CUBE:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update.comp',
+                    path='./shaders/boids/boid_update_withHash.comp',
                     defines={'CUBE': 1}),
             MapType.MAP_SPHERE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update.comp',
+                    path='./shaders/boids/boid_update_withHash.comp',
                     defines={'SPHERE_T': 1}),
             MapType.MAP_SPHERE:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update.comp',
+                    path='./shaders/boids/boid_update_withHash.comp',
                     defines={'SPHERE': 1}),
         }
 
@@ -192,13 +199,20 @@ class MyWindow(moderngl_window.WindowConfig):
 
         ## Spatial Hash
         ## --------------------------------------------------------
-        self.SH_size = 4
+        self.SH_size = 2
 
-        size = 4 * 2 * self.boid_count #4*2*1000 = 8000 #len(self.buffer_unsorted.read()) == 8000
-        self.buffer_unsorted = self.ctx.buffer(reserve=size)
-        self.buffer_sorted = self.ctx.buffer(reserve=size)
-        self.buffer_cell_start = self.ctx.buffer(reserve=self.SH_size**3)
+        # size = 4 * 2 * self.boid_count #4*2*1000 = 8000 #len(self.buffer_unsorted.read()) == 8000
+        # self.buffer_unsorted = self.ctx.buffer(reserve=size)
+        # self.buffer_sorted = self.ctx.buffer(reserve=size)
+        # self.buffer_cell_start = self.ctx.buffer(reserve=self.SH_size**3)
 
+        self.buffer_cell_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
+        self.buffer_cell_info = self.ctx.buffer(reserve=4*2 * self.SH_size**3, dynamic=True)
+        self.buffer_sorted_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
+
+        self.buffer_cell_id.clear()
+        self.buffer_cell_info.clear()
+        self.buffer_sorted_id.clear()
 
         ## Compass
         ## --------------------------------------------------------
@@ -279,6 +293,9 @@ class MyWindow(moderngl_window.WindowConfig):
 
     def gen_initial_data(self, count):
         for _ in range(count):
+            # yield -1
+            # yield -1
+            # yield 1
             yield uniform(-self.map_size/2, self.map_size/2)  # x
             yield uniform(-self.map_size/2, self.map_size/2)  # y
             yield uniform(-self.map_size/2, self.map_size/2)  # z
@@ -290,12 +307,15 @@ class MyWindow(moderngl_window.WindowConfig):
             yield dir[2]  # fz
             yield 69.0 # fuck that too
 
-    from src._resize_buffer import resize_boids_buffer
-    from src._events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
-    from src._custom_profiles import set_custom_profile_1, set_custom_profile_2
-    from src._gui import gui_newFrame, gui_draw
+    from _resize_buffer import resize_boids_buffer
+    from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
+    from _custom_profiles import set_custom_profile_1, set_custom_profile_2
+    from _gui import gui_newFrame, gui_draw
 
-    from src._render import render
-    from src._update import update
+    from _render import render
+    from _update import update
 
-    from src._cleanup import cleanup
+    from _cleanup import cleanup
+
+if __name__ == "__main__":
+    MyWindow.run()
