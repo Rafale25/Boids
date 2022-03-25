@@ -38,8 +38,6 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.pause = False
 
-        # Is there any community "gameJam" with pyglet, Arcade or ModernGL ?
-
         self.min_boids = 512
         self.max_boids = 512 * 100
         self.map_size = 20
@@ -94,29 +92,29 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/line/line.vert',
                     fragment_shader='./shaders/line/line.frag'),
 
-            'SPATIAL_HASH_1':
-                self.load_compute_shader(
-                    path='./shaders/boids/boid_spatialHash1.comp'),
-            'SPATIAL_HASH_2':
-                self.load_compute_shader(
-                    path='./shaders/boids/boid_spatialHash2.comp'),
+            # 'SPATIAL_HASH_1':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/boid_spatialHash1.comp'),
+            # 'SPATIAL_HASH_2':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/boid_spatialHash2.comp'),
 
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update_withHash.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'CUBE_T': 1}),
             MapType.MAP_CUBE:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update_withHash.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'CUBE': 1}),
             MapType.MAP_SPHERE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update_withHash.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'SPHERE_T': 1}),
             MapType.MAP_SPHERE:
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_update_withHash.comp',
+                    path='./shaders/boids/boid_update.comp',
                     defines={'SPHERE': 1}),
         }
 
@@ -173,6 +171,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.buffer_1.bind_to_storage_buffer(0)
         self.buffer_2.bind_to_storage_buffer(1)
 
+        # can't do that yet because x4/i not supported by moderngl-window
         # self.vbo = self.ctx.buffer(vertices)
         # self.vao_1 = VAO(mode=moderngl.TRIANGLES)
         # self.vao_1.buffer(self.boid_vertices, '3f', ['in_position'])
@@ -199,20 +198,20 @@ class MyWindow(moderngl_window.WindowConfig):
 
         ## Spatial Hash
         ## --------------------------------------------------------
-        self.SH_size = 2
+        # self.SH_size = 6
 
         # size = 4 * 2 * self.boid_count #4*2*1000 = 8000 #len(self.buffer_unsorted.read()) == 8000
         # self.buffer_unsorted = self.ctx.buffer(reserve=size)
         # self.buffer_sorted = self.ctx.buffer(reserve=size)
         # self.buffer_cell_start = self.ctx.buffer(reserve=self.SH_size**3)
 
-        self.buffer_cell_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
-        self.buffer_cell_info = self.ctx.buffer(reserve=4*2 * self.SH_size**3, dynamic=True)
-        self.buffer_sorted_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
+        # self.buffer_cell_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
+        # self.buffer_cell_info = self.ctx.buffer(reserve=4*2 * self.SH_size**3, dynamic=True)
+        # self.buffer_sorted_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
 
-        self.buffer_cell_id.clear()
-        self.buffer_cell_info.clear()
-        self.buffer_sorted_id.clear()
+        # self.buffer_cell_id.clear()
+        # self.buffer_cell_info.clear()
+        # self.buffer_sorted_id.clear()
 
         ## Compass
         ## --------------------------------------------------------

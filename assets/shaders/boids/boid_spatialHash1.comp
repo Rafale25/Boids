@@ -81,12 +81,12 @@ uint cell_index = int((cell_index3.z) * (SH_size * SH_size) +
 ivec3 getCellPos(vec3 p) {
     /* add map_size/2 to position because map is centered on origin
         divide by SH_size to convert xyz to cell indices on each axis */
-    float cellSize = map_size / float(SH_size);
-    return ivec3((p + (map_size/2.0)) / cellSize);
+    float cellSize = (map_size*2) / float(SH_size);
+    return ivec3((p) / cellSize);
 }
 
 uint getCellId(ivec3 cellPos) {
-    float cellSize = map_size / float(SH_size);
+    float cellSize = (map_size*2) / float(SH_size);
     return uint(cellPos.z * (SH_size*SH_size) +
                 cellPos.y * SH_size +
                 cellPos.x);
