@@ -39,11 +39,11 @@ class MyWindow(moderngl_window.WindowConfig):
         self.pause = False
 
         self.min_boids = 512
-        self.max_boids = 512 * 100
+        self.max_boids = 512 * 150
         self.map_size = 20
         self.map_type = MapType.MAP_CUBE;
 
-        self.boid_count = 512#*2
+        self.boid_count = 512*10
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -196,7 +196,7 @@ class MyWindow(moderngl_window.WindowConfig):
         ## Spatial Hash
         ## --------------------------------------------------------
         self.cell_spacing = self.map_size / 2
-        self.table_size = int(self.boid_count * 2)
+        self.table_size = int(self.boid_count * 1)
 
         self.buffer_cell_start = self.ctx.buffer(reserve=4*4*self.table_size, dynamic=True)
         self.buffer_cell_entries = self.ctx.buffer(reserve=4*4*self.boid_count, dynamic=True)
@@ -283,9 +283,6 @@ class MyWindow(moderngl_window.WindowConfig):
 
     def gen_initial_data(self, count):
         for _ in range(count):
-            # yield -1
-            # yield -1
-            # yield 1
             yield uniform(-self.map_size/2, self.map_size/2)  # x
             yield uniform(-self.map_size/2, self.map_size/2)  # y
             yield uniform(-self.map_size/2, self.map_size/2)  # z

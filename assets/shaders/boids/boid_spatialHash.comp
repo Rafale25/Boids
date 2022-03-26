@@ -13,20 +13,11 @@ layout(std430, binding=0) readonly buffer buffer0 {
     Boid boids[];
 };
 
-// struct Cell {
-//     uint id;
-//     uint pad1;
-//     uint pad2;
-//     uint pad3;
-// };
-
 layout(std430, binding=1) buffer buffer1 {
-    uvec4 cell_start[];
-    // Cell cell_start[];
+    uvec4 cell_start[]; // uvec4 for padding
 };
 
 layout(std430, binding=2) buffer buffer2 {
-    // uint cell_entries[];
     uvec4 cell_entries[];
 };
 
@@ -53,10 +44,10 @@ uniform float cell_spacing;
 uniform uint table_size;
 
 
-ivec3 cell_xyz(vec3 pos, float spacing)
+ivec3 cell_xyz(vec3 pos)
 {
     return ivec3(
-        floor(pos.x/spacing), floor(pos.y/spacing), floor(pos.z/spacing)
+        floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
     );
 }
 
@@ -65,6 +56,7 @@ uint hash(ivec3 cell_index)
     int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     return abs(h) % table_size;
 }
+
 
 void main() {
     const uint boid_index = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
@@ -76,7 +68,7 @@ void main() {
     const Boid boid = boids[boid_index];
 
     // atomic add cell_start with hash_index of boids
-    ivec3 cell_index = cell_xyz(boid.pos, cell_spacing);
+    ivec3 cell_index = cell_xyz(boid.pos);
     uint hash_index = hash(cell_index);
 
     // uint i1 = uint(hash_index / 4);
@@ -94,18 +86,22 @@ void main() {
 
     // partial sum
     //TODO: parallelize this prefix sum
+    uint start = 0;
     if (boid_index == 0) {
-        for (uint i = 1 ; i < table_size; ++i) {
-            cell_start[i] += cell_start[i - 1];
-            memoryBarrierAtomicCounter();
-            memoryBarrierBuffer();
+        for (uint i = 0 ; i < table_size; ++i) {
+            start += cell_start[i][0];
+            cell_start[i][0] = start;
+            // cell_start[i][0] = cell_start[i - 1][0];
+            // memoryBarrierAtomicCounter();
+            // memoryBarrierBuffer();
         }
     }
 
     //TODO: check if its the correct barrier to use
     barrier();
     memoryBarrierBuffer();
+    memoryBarrierAtomicCounter();
 
     // fill cell_entries
-    cell_entries[boid_index][0] = atomicAdd(cell_start[hash_index][0], -1);
+    cell_entries[atomicAdd(cell_start[hash_index][0], -1) - 1][0] = boid_index;
 }
