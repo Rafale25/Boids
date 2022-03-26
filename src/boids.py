@@ -43,7 +43,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 20
         self.map_type = MapType.MAP_CUBE;
 
-        self.boid_count = 512*2
+        self.boid_count = 512#*2
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -92,12 +92,9 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/line/line.vert',
                     fragment_shader='./shaders/line/line.frag'),
 
-            # 'SPATIAL_HASH_1':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/boid_spatialHash1.comp'),
-            # 'SPATIAL_HASH_2':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/boid_spatialHash2.comp'),
+            'SPATIAL_HASH':
+                self.load_compute_shader(
+                    path='./shaders/boids/boid_spatialHash.comp'),
 
 
             MapType.MAP_CUBE_T:
@@ -198,20 +195,14 @@ class MyWindow(moderngl_window.WindowConfig):
 
         ## Spatial Hash
         ## --------------------------------------------------------
-        # self.SH_size = 6
+        self.cell_spacing = self.map_size / 2
+        self.table_size = int(self.boid_count * 2)
 
-        # size = 4 * 2 * self.boid_count #4*2*1000 = 8000 #len(self.buffer_unsorted.read()) == 8000
-        # self.buffer_unsorted = self.ctx.buffer(reserve=size)
-        # self.buffer_sorted = self.ctx.buffer(reserve=size)
-        # self.buffer_cell_start = self.ctx.buffer(reserve=self.SH_size**3)
+        self.buffer_cell_start = self.ctx.buffer(reserve=4*4*self.table_size, dynamic=True)
+        self.buffer_cell_entries = self.ctx.buffer(reserve=4*4*self.boid_count, dynamic=True)
 
-        # self.buffer_cell_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
-        # self.buffer_cell_info = self.ctx.buffer(reserve=4*2 * self.SH_size**3, dynamic=True)
-        # self.buffer_sorted_id = self.ctx.buffer(reserve=4 * self.boid_count, dynamic=True)
-
-        # self.buffer_cell_id.clear()
-        # self.buffer_cell_info.clear()
-        # self.buffer_sorted_id.clear()
+        self.buffer_cell_start.clear()
+        self.buffer_cell_entries.clear()
 
         ## Compass
         ## --------------------------------------------------------

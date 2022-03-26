@@ -8,12 +8,13 @@ def resize_boids_buffer(self, new_count):
     self.buffer_2.orphan(new_count * 32)
 
     ## resize hash buffers too
-    # self.buffer_cell_id.orphan(size=4 * new_count)
-    # self.buffer_sorted_id.orphan(size=4 * new_count)
+    self.table_size = int(new_count * 1.5)
+    self.buffer_cell_start.orphan(4*4 * self.table_size)
+    self.buffer_cell_entries.orphan(4*4 * new_count)
 
     if new_count > self.boid_count:
         b_new_boids = array('f', self.gen_initial_data(new_count - self.boid_count))
-        # print(new_count - self.boid_count)
+
         bytes1 += b_new_boids
         bytes2 += b_new_boids
 

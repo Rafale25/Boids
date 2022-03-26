@@ -5,6 +5,8 @@
 #define SPHERE 0
 #define SPHERE_T 0
 
+#define PI 3.1415926535897932384626
+
 layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 struct Boid {
@@ -22,9 +24,19 @@ layout(std430, binding=1) writeonly buffer boids_out {
     Boid boids[];
 } Out_boids;
 
+layout(std430, binding=2) readonly buffer buffer1 {
+    // uint cell_start[];
+    uvec4 cell_start[];
+};
+
+layout(std430, binding=3) readonly buffer buffer2 {
+    // uint cell_entries[];
+    uvec4 cell_entries[];
+};
+
 uniform int boid_count;
 uniform float speed;
-uniform float map_size = 0;
+uniform float map_size;
 uniform float view_distance;
 uniform float view_angle;
 
@@ -32,16 +44,28 @@ uniform float separation_force;
 uniform float alignment_force;
 uniform float cohesion_force;
 
-#define PI 3.1415926535897932384626
+uniform float cell_spacing;
+uniform uint table_size;
 
-float map(float value, float min1, float max1, float min2, float max2) {
-    return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
 
 float distSquared(vec3 A, vec3 B) {
     const vec3 C = A - B;
     return dot(C, C);
 }
+
+ivec3 cell_xyz(vec3 pos, float spacing)
+{
+    return ivec3(
+        floor(pos.x/spacing), floor(pos.y/spacing), floor(pos.z/spacing)
+    );
+}
+
+uint hash(ivec3 cell_index)
+{
+    int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
+    return abs(h) % table_size;
+}
+
 
 void main() {
     const uint id = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
@@ -56,10 +80,62 @@ void main() {
     vec3 ourDir = In_boids.boids[id].dir;
 
     int nb_flockmates = 0;
-    vec3 averageDirection =    vec3(0.0, 0.0, 0.0);
-    vec3 averagePosition =    vec3(0.0, 0.0, 0.0);
-    vec3 totalForce =        vec3(0.0, 0.0, 0.0); // test, delete this later
+    vec3 averageDirection = vec3(0.0, 0.0, 0.0);
+    vec3 averagePosition = vec3(0.0, 0.0, 0.0);
+    vec3 totalForce = vec3(0.0, 0.0, 0.0);
 
+
+    ivec3 low = cell_xyz(vec3(ourPos.x-view_distance, ourPos.y-view_distance, ourPos.z-view_distance), cell_spacing);
+    ivec3 high = cell_xyz(vec3(ourPos.x+view_distance, ourPos.y+view_distance, ourPos.z+view_distance), cell_spacing);
+    // ivec3 pos = cell_xyz(ourPos, cell_spacing);
+
+    uint hash_index;
+    uint start;
+    uint end;
+
+    for (int x = low.x; x < high.x + 1; ++x) {
+        for (int y = low.y; y < high.y + 1; ++y) {
+            for (int z = low.z; z < high.z + 1; ++z) {
+
+
+
+                // hash_index = hash(pos);
+                hash_index = hash(ivec3(x, y, z));
+                start = cell_start[hash_index][0];
+                end = start;
+                if (hash_index + 1 < boid_count) {
+                    end = cell_start[hash_index + 1][0];
+                }
+
+                for (uint j = start ; j < end ; ++j) {
+                    const uint i = cell_entries[j][0];
+                    if (id == i) continue; // don't check if itself
+
+                    const vec3 theirPos = In_boids.boids[i].pos;
+                    const vec3 theirDir = In_boids.boids[i].dir;
+
+                    const vec3 p = theirPos;
+                    const vec3 v = ourPos;
+                    const vec3 d = ourDir;
+                    const float r = dot((p - v)/length(p - v), d/length(d));
+
+                    const float sqrDist = distSquared(ourPos, theirPos);
+                    if (sqrDist < view_distance * view_distance) {
+                        if (length(acos(r)) <= view_angle) {
+                            nb_flockmates += 1;
+                            averageDirection += theirDir;
+                            averagePosition += theirPos;
+
+                            // separation
+                            totalForce += (ourPos - theirPos) / sqrDist;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
     for (int i = 0 ; i < boid_count ; ++i) {
         if (id == i) continue; // don't check if itself
 
@@ -84,6 +160,7 @@ void main() {
             }
         }
     }
+    */
 
     // separation
     ourDir += totalForce * separation_force;
