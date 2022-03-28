@@ -1,58 +1,50 @@
 #version 430
 
-layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
+#define LOCAL_SIZE_X 0
+
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
 struct Boid {
     vec3 pos;
-    float a; // useless as fuck
+    float a; // padding
     vec3 dir;
-    float b; // useless as fuck
+    float b; // padding
 };
 
-layout(std430, binding=0) readonly buffer buffer0 {
+struct Cell {
+    uint cell_id;
+    uint boid_id;
+};
+
+layout(std430, binding=0) readonly buffer buffer_0 {
     Boid boids[];
 };
 
-layout(std430, binding=1) buffer buffer1 {
-    uvec4 cell_start[]; // uvec4 for padding
+layout(std430, binding=1) coherent buffer buffer_1 {
+    Cell table[];
 };
 
-layout(std430, binding=2) buffer buffer2 {
-    uvec4 cell_entries[];
+layout(std430, binding=2) writeonly buffer buffer_2 {
+    Cell sorted_table[];
 };
 
-// uniform int boid_count;
+layout(std430, binding=3) writeonly buffer buffer_3 {
+    uint cell_start[];
+};
+
 // uniform float map_size;
-
-/*
-0 1 2 3 4 5 6 7 8 9 10 11
-
-[0 1 2 3] [4 5 6 7] [8 9 10 11]
-    1         2         3
-
-7
-7 / 4 = 1.75
-int(1.75) = 1
-
-7 % 4 = 3
-
-[4 5 6 7]
- 0 1 2 3
-*/
+uniform int boid_count;
 
 uniform float cell_spacing;
 uniform uint table_size;
 
-
-ivec3 cell_xyz(vec3 pos)
-{
+ivec3 cell_xyz(vec3 pos) {
     return ivec3(
         floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
     );
 }
 
-uint hash(ivec3 cell_index)
-{
+uint hash(ivec3 cell_index) {
     int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     return abs(h) % table_size;
 }
@@ -66,42 +58,42 @@ void main() {
     // if (boid_index >= boid_count) return; // don't use in case of barrier in following code
 
     const Boid boid = boids[boid_index];
-
-    // atomic add cell_start with hash_index of boids
     ivec3 cell_index = cell_xyz(boid.pos);
     uint hash_index = hash(cell_index);
 
-    // uint i1 = uint(hash_index / 4);
-    // uint i2 = hash_index % 4;
+    table[boid_index].cell_id = hash_index;
+    table[boid_index].boid_id = boid_index;
 
-    atomicAdd(cell_start[hash_index][0], 1);
-    // cell_start[boid_index][0] = hash_index;
+    // <- UNTIL HERE EVERYTHING SEEMS TO BE WORKING
 
-    // wait for thread to reach here and data to be updated
-    //TODO: check if its the correct barrier to use
-    memoryBarrierAtomicCounter();
+    // memoryBarrier();
     memoryBarrierBuffer();
-    barrier();
 
+    // stupidest sort algorithm
+    // - for every value looping the whole list and finding the index it should then place it
+    uint my_value = table[boid_index].cell_id;
+    uint value = 0;
+    uint offset = 0;
+    uint sort_index = 0;
 
-    // partial sum
-    //TODO: parallelize this prefix sum
-    uint start = 0;
-    if (boid_index == 0) {
-        for (uint i = 0 ; i < table_size; ++i) {
-            start += cell_start[i][0];
-            cell_start[i][0] = start;
-            // cell_start[i][0] = cell_start[i - 1][0];
-            // memoryBarrierAtomicCounter();
-            // memoryBarrierBuffer();
-        }
+    for (uint i = 0 ; i < boid_count ; ++i) {
+        value = table[i].cell_id;
+        if (i == boid_index)
+            continue;
+        if (my_value > value)
+            sort_index += 1;
+        else if ((i < boid_index) && (my_value == value))
+            offset += 1;
     }
 
-    //TODO: check if its the correct barrier to use
-    barrier();
-    memoryBarrierBuffer();
-    memoryBarrierAtomicCounter();
+    sort_index += offset;
 
-    // fill cell_entries
-    cell_entries[atomicAdd(cell_start[hash_index][0], -1) - 1][0] = boid_index;
+    sorted_table[sort_index].cell_id = hash_index;
+    sorted_table[sort_index].boid_id = boid_index;
+
+    // <- THE SORT SEEMS TO BE WORKING AS INTENDED (not completely sure)
+
+    if (offset == 0) {
+        cell_start[hash_index] = sort_index;
+    }
 }
