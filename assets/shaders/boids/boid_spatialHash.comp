@@ -2,7 +2,7 @@
 
 #define LOCAL_SIZE_X 0
 
-layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 struct Boid {
     vec3 pos;
@@ -38,18 +38,27 @@ uniform float cell_spacing;
 uniform uint table_size;
 
 ivec3 cell_xyz(vec3 pos) {
-    return ivec3(
-        floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
-    );
+    // return ivec3(
+    //     floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
+    // );
+    return ivec3(floor(pos/cell_spacing));
 }
 
 uint hash(ivec3 cell_index) {
     int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     return abs(h) % table_size;
+    // const uint p1 = 73856093; // some large primes
+    // const uint p2 = 19349663;
+    // const uint p3 = 83492791;
+    // uint n = p1 * cell_index.x ^ p2*cell_index.y ^ p3*cell_index.z;
+    // n %= (table_size);
+    // return n;
 }
 
 
 void main() {
+    // const uint boid_index = gl_GlobalInvocationID.x;
+
     const uint boid_index = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
                             gl_GlobalInvocationID.y * gl_NumWorkGroups.x +
                             gl_GlobalInvocationID.x;
@@ -63,6 +72,10 @@ void main() {
     table[boid_index].cell_id = hash_index;
     table[boid_index].boid_id = boid_index;
 
+    // table[boid_index].cell_id = boid_index1;
+    // table[boid_index].boid_id = 42;
+
+
     // <- UNTIL HERE EVERYTHING SEEMS TO BE WORKING
 
     // memoryBarrier();
@@ -74,6 +87,8 @@ void main() {
     uint value = 0;
     uint offset = 0;
     uint sort_index = 0;
+
+    // memoryBarrier();
 
     for (uint i = 0 ; i < boid_count ; ++i) {
         value = table[i].cell_id;
@@ -90,11 +105,16 @@ void main() {
 
     sort_index += offset;
 
+    // memoryBarrier();
+
     sorted_table[sort_index].cell_id = hash_index;
     sorted_table[sort_index].boid_id = boid_index;
 
-    // sorted_table[boid_index].cell_id = boid_index;
-    // sorted_table[boid_index].boid_id = 42;
+    // memoryBarrier();
+
+    // sorted_table[boid_index].cell_id = sort_index;
+    // sorted_table[boid_index].boid_id = offset;
+
 
     // <- THE SORT SEEMS TO BE WORKING AS INTENDED (not completely sure)
 

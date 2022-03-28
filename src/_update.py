@@ -34,8 +34,8 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['alignment_force'] = self.alignment_force * 0.03
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
-    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
-    self.program[self.map_type]['table_size'] = self.table_size
+    # self.program[self.map_type]['cell_spacing'] = self.cell_spacing
+    # self.program[self.map_type]['table_size'] = self.table_size
 
     # self.program['SPATIAL_HASH']['map_size'] = self.map_size
     self.program['SPATIAL_HASH']['boid_count'] = self.boid_count
@@ -60,13 +60,14 @@ def update(self, time_since_start, frametime):
     self.ctx.finish() # wait for compute shader to finish
 
 
+    #TODO: TESTER SUR LE PC PORTABLE
+
     # print(self.ctx.info)
     # exit()
 
     # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
-    # print(data[-10:-1])
     # print(data)
 
     data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
@@ -74,16 +75,25 @@ def update(self, time_since_start, frametime):
     data = [v[0] for v in data]
     print(data)
 
-    print(self.boid_count)
+    # print(self.boid_count)
 
-    print("sorted: {}".format(
-        all(data[i] <= data[i+1] for i in range(len(data) - 1)))
-    )
+    is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
+    self.is_sorted_count.append(is_sorted)
+    print("sorted: {}".format(is_sorted))
+
+
+    # if len(self.is_sorted_count) >= 100:
+    #     print(self.boid_count)
+    #     print(f"is_sorted_count: {self.is_sorted_count}")
+    #     print("percentage of good sort {}%".format((sum(self.is_sorted_count) / 100.0) * 100))
+    #     exit()
 
     # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
     # print(data)
+
+
     exit()
 
 
@@ -99,9 +109,6 @@ def update(self, time_since_start, frametime):
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
     self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
-
-
-
 
 
 
