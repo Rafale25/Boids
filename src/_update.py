@@ -56,7 +56,7 @@ def update(self, time_since_start, frametime):
     self.buffer_table_sorted.bind_to_storage_buffer(2)
     self.buffer_cell_start.bind_to_storage_buffer(3)
 
-    self.program['SPATIAL_HASH'].run(x, 1, 1)
+    self.program['SPATIAL_HASH'].run(x)
     self.ctx.finish() # wait for compute shader to finish
 
 
@@ -69,20 +69,22 @@ def update(self, time_since_start, frametime):
     # print(data[-10:-1])
     # print(data)
 
-    # data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # print(data)
-    #
-    # print("sorted: {}".format(
-    #     all(data[i] <= data[i+1] for i in range(len(data) - 1)))
-    # )
+    data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
+    data = struct.iter_unpack('I', data)
+    data = [v[0] for v in data]
+    print(data)
+
+    print(self.boid_count)
+
+    print("sorted: {}".format(
+        all(data[i] <= data[i+1] for i in range(len(data) - 1)))
+    )
 
     # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
     # print(data)
-    # exit()
+    exit()
 
 
     # bind correct boid buffer

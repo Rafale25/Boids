@@ -34,7 +34,6 @@ layout(std430, binding=3) writeonly buffer buffer_3 {
 
 // uniform float map_size;
 uniform int boid_count;
-
 uniform float cell_spacing;
 uniform uint table_size;
 
@@ -71,25 +70,31 @@ void main() {
 
     // stupidest sort algorithm
     // - for every value looping the whole list and finding the index it should then place it
-    uint my_value = table[boid_index].cell_id;
+    const uint my_value = table[boid_index].cell_id;
     uint value = 0;
     uint offset = 0;
     uint sort_index = 0;
 
     for (uint i = 0 ; i < boid_count ; ++i) {
         value = table[i].cell_id;
-        if (i == boid_index)
+        if (i == boid_index) {
             continue;
-        if (my_value > value)
+        }
+        if (my_value > value) {
             sort_index += 1;
-        else if ((i < boid_index) && (my_value == value))
+        }
+        else if ((i < boid_index) && (my_value == value)) {
             offset += 1;
+        }
     }
 
     sort_index += offset;
 
     sorted_table[sort_index].cell_id = hash_index;
     sorted_table[sort_index].boid_id = boid_index;
+
+    // sorted_table[boid_index].cell_id = boid_index;
+    // sorted_table[boid_index].boid_id = 42;
 
     // <- THE SORT SEEMS TO BE WORKING AS INTENDED (not completely sure)
 
