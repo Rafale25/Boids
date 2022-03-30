@@ -44,7 +44,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 20
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = self.local_size_x*96
+        self.boid_count = self.local_size_x*1
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -93,9 +93,13 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/line/line.vert',
                     fragment_shader='./shaders/line/line.frag'),
 
-            'SPATIAL_HASH':
+            'SPATIAL_HASH_1':
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_spatialHash.comp',
+                    path='./shaders/boids/boid_spatialHash_1.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'SPATIAL_HASH_2':
+                self.load_compute_shader(
+                    path='./shaders/boids/boid_spatialHash_2.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             MapType.MAP_CUBE_T:
@@ -197,15 +201,12 @@ class MyWindow(moderngl_window.WindowConfig):
 
         ## Spatial Hash
         ## --------------------------------------------------------
-        self.cell_spacing = 2#self.map_size / 12
-        # self.table_size = int(self.boid_count * 1)
-        self.table_size = self.boid_count
+        self.cell_spacing = 1.0
+        self.table_size = int(self.boid_count)
 
         self.buffer_table = self.ctx.buffer(reserve=2*4*self.table_size, dynamic=True)
         self.buffer_table_sorted = self.ctx.buffer(reserve=self.buffer_table.size, dynamic=True)
         self.buffer_cell_start = self.ctx.buffer(reserve=4*self.table_size, dynamic=True)
-
-        self.is_sorted_count = []
 
         ## Compass
         ## --------------------------------------------------------
@@ -299,7 +300,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
     from _resize_buffer import resize_boids_buffer
     from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
-    from _custom_profiles import set_custom_profile_1, set_custom_profile_2
+    from _custom_profiles import set_custom_profile_1
     from _gui import gui_newFrame, gui_draw
 
     from _render import render

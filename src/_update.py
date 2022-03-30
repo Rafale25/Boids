@@ -34,13 +34,17 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['alignment_force'] = self.alignment_force * 0.03
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
-    # self.program[self.map_type]['cell_spacing'] = self.cell_spacing
-    # self.program[self.map_type]['table_size'] = self.table_size
+    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
+    self.program[self.map_type]['table_size'] = self.table_size
 
     # self.program['SPATIAL_HASH']['map_size'] = self.map_size
-    self.program['SPATIAL_HASH']['boid_count'] = self.boid_count
-    self.program['SPATIAL_HASH']['cell_spacing'] = self.cell_spacing
-    self.program['SPATIAL_HASH']['table_size'] = self.table_size
+    # self.program['SPATIAL_HASH']['boid_count'] = self.boid_count
+    self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
+    self.program['SPATIAL_HASH_1']['table_size'] = self.table_size
+
+    self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
+    self.program['SPATIAL_HASH_2']['cell_spacing'] = self.cell_spacing
+    self.program['SPATIAL_HASH_2']['table_size'] = self.table_size
 
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
@@ -56,13 +60,20 @@ def update(self, time_since_start, frametime):
     self.buffer_table_sorted.bind_to_storage_buffer(2)
     self.buffer_cell_start.bind_to_storage_buffer(3)
 
-    self.program['SPATIAL_HASH'].run(x)
+
+    with self.query:
+        self.program['SPATIAL_HASH_1'].run(x)
+    self.query_debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
+
+    self.ctx.finish() # wait for compute shader to finish
+
+    with self.query:
+        self.program['SPATIAL_HASH_2'].run(x)
+    self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+
     self.ctx.finish() # wait for compute shader to finish
 
 
-    #TODO: TESTER SUR LE PC PORTABLE
-
-    # print(self.ctx.info)
     # exit()
 
     # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
@@ -70,17 +81,15 @@ def update(self, time_since_start, frametime):
     # data = [v[0] for v in data]
     # print(data)
 
-    data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
-    data = struct.iter_unpack('I', data)
-    data = [v[0] for v in data]
-    print(data)
+    # data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
+    # data = struct.iter_unpack('I', data)
+    # data = [v[0] for v in data]
+    # print(data)
 
     # print(self.boid_count)
 
-    is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
-    self.is_sorted_count.append(is_sorted)
-    print("sorted: {}".format(is_sorted))
-
+    # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
+    # print("sorted: {}".format(is_sorted))
 
     # if len(self.is_sorted_count) >= 100:
     #     print(self.boid_count)
@@ -93,8 +102,7 @@ def update(self, time_since_start, frametime):
     # data = [v[0] for v in data]
     # print(data)
 
-
-    exit()
+    # exit()
 
 
     # bind correct boid buffer

@@ -60,14 +60,12 @@ float distSquared(vec3 A, vec3 B) {
 
 ivec3 cell_xyz(vec3 pos)
 {
-    return ivec3(
-        floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
-    );
+    return ivec3(floor(pos / cell_spacing));
 }
 
 uint hash(ivec3 cell_index)
 {
-    int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
+    const int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     return abs(h) % table_size;
 }
 
@@ -90,8 +88,9 @@ void main() {
     vec3 totalForce = vec3(0.0, 0.0, 0.0);
 
 
-    ivec3 low = cell_xyz(vec3(ourPos.x-view_distance, ourPos.y-view_distance, ourPos.z-view_distance));
-    ivec3 high = cell_xyz(vec3(ourPos.x+view_distance, ourPos.y+view_distance, ourPos.z+view_distance));
+    // ivec3 low = cell_xyz(vec3(ourPos.x-view_distance, ourPos.y-view_distance, ourPos.z-view_distance));
+    ivec3 low = cell_xyz(ourPos - view_distance);
+    ivec3 high = cell_xyz(ourPos + view_distance);
     // ivec3 pos = cell_xyz(ourPos);
 
     uint hash_index;

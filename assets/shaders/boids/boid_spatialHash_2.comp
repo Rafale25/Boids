@@ -20,7 +20,7 @@ layout(std430, binding=0) readonly buffer buffer_0 {
     Boid boids[];
 };
 
-layout(std430, binding=1) coherent buffer buffer_1 {
+layout(std430, binding=1) readonly buffer buffer_1 {
     Cell table[];
 };
 
@@ -32,15 +32,13 @@ layout(std430, binding=3) writeonly buffer buffer_3 {
     uint cell_start[];
 };
 
+
 // uniform float map_size;
 uniform int boid_count;
 uniform float cell_spacing;
 uniform uint table_size;
 
 ivec3 cell_xyz(vec3 pos) {
-    // return ivec3(
-    //     floor(pos.x/cell_spacing), floor(pos.y/cell_spacing), floor(pos.z/cell_spacing)
-    // );
     return ivec3(floor(pos/cell_spacing));
 }
 
@@ -57,29 +55,14 @@ uint hash(ivec3 cell_index) {
 
 
 void main() {
-    // const uint boid_index = gl_GlobalInvocationID.x;
-
     const uint boid_index = gl_GlobalInvocationID.z * gl_NumWorkGroups.y * gl_NumWorkGroups.x +
                             gl_GlobalInvocationID.y * gl_NumWorkGroups.x +
                             gl_GlobalInvocationID.x;
-
-    // if (boid_index >= boid_count) return; // don't use in case of barrier in following code
 
     const Boid boid = boids[boid_index];
     ivec3 cell_index = cell_xyz(boid.pos);
     uint hash_index = hash(cell_index);
 
-    table[boid_index].cell_id = hash_index;
-    table[boid_index].boid_id = boid_index;
-
-    // table[boid_index].cell_id = boid_index1;
-    // table[boid_index].boid_id = 42;
-
-
-    // <- UNTIL HERE EVERYTHING SEEMS TO BE WORKING
-
-    // memoryBarrier();
-    memoryBarrierBuffer();
 
     // stupidest sort algorithm
     // - for every value looping the whole list and finding the index it should then place it
@@ -105,15 +88,8 @@ void main() {
 
     sort_index += offset;
 
-    // memoryBarrier();
-
     sorted_table[sort_index].cell_id = hash_index;
     sorted_table[sort_index].boid_id = boid_index;
-
-    // memoryBarrier();
-
-    // sorted_table[boid_index].cell_id = sort_index;
-    // sorted_table[boid_index].boid_id = offset;
 
 
     // <- THE SORT SEEMS TO BE WORKING AS INTENDED (not completely sure)

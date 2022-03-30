@@ -35,6 +35,16 @@ def gui_newFrame(self):
 
     imgui.new_line()
 
+    changed, self.cell_spacing = imgui.drag_float(
+        label="cell spacing",
+        value=self.cell_spacing,
+        change_speed=0.1,
+        min_value=0.2,
+        max_value=5,
+        format="%.1f")
+
+    imgui.new_line()
+
     changed, self.speed = imgui.drag_float(
         label="Speed",
         value=self.speed,
@@ -88,8 +98,6 @@ def gui_newFrame(self):
     imgui.text("Custom profiles:")
     if (imgui.button("Profile 1")):
         self.set_custom_profile_1()
-    if (imgui.button("Profile 2")):
-        self.set_custom_profile_2()
     imgui.end_group()
 
     imgui.end()
