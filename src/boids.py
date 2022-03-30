@@ -41,10 +41,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512
         self.min_boids = self.local_size_x
         self.max_boids = self.local_size_x * 150
-        self.map_size = 20
+        self.map_size = 30
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = self.local_size_x*1
+        self.boid_count = self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -62,7 +62,7 @@ class MyWindow(moderngl_window.WindowConfig):
             fov=60.0,
             aspect_ratio=self.wnd.aspect_ratio,
             near=0.1,
-            far=200.0,
+            far=1000.0,
         )
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
@@ -101,6 +101,9 @@ class MyWindow(moderngl_window.WindowConfig):
                 self.load_compute_shader(
                     path='./shaders/boids/boid_spatialHash_2.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'BITONIC_MERGE_SORT':
+                self.load_compute_shader(
+                    path='./shaders/boids/bitonic_merge_sort.comp'),
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -205,7 +208,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.table_size = int(self.boid_count)
 
         self.buffer_table = self.ctx.buffer(reserve=2*4*self.table_size, dynamic=True)
-        self.buffer_table_sorted = self.ctx.buffer(reserve=self.buffer_table.size, dynamic=True)
         self.buffer_cell_start = self.ctx.buffer(reserve=4*self.table_size, dynamic=True)
 
         ## Compass
@@ -305,6 +307,8 @@ class MyWindow(moderngl_window.WindowConfig):
 
     from _render import render
     from _update import update
+
+    from _sort import sort
 
     from _cleanup import cleanup
 

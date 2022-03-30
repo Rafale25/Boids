@@ -1,8 +1,9 @@
 import struct
 from math import ceil, floor
 from array import array
-import time
+from time import perf_counter
 
+from OpenGL import GL
 
 def hash(x, y, z):
     h = int(x * 92837111) ^ int(y * 689287499) ^ int(z * 283923481)
@@ -42,46 +43,59 @@ def update(self, time_since_start, frametime):
     self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
     self.program['SPATIAL_HASH_1']['table_size'] = self.table_size
 
-    self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
-    self.program['SPATIAL_HASH_2']['cell_spacing'] = self.cell_spacing
-    self.program['SPATIAL_HASH_2']['table_size'] = self.table_size
+    # self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
+    # self.program['SPATIAL_HASH_2']['cell_spacing'] = self.cell_spacing
+    # self.program['SPATIAL_HASH_2']['table_size'] = self.table_size
 
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
     # print(self.boid_count, self.local_size_x)
     # print(x)
 
-    self.buffer_table.clear()
-    self.buffer_table_sorted.clear()
-    self.buffer_cell_start.clear()
+    # self.buffer_table.clear()
+    # self.buffer_cell_start.clear()
 
     self.buffer_1.bind_to_storage_buffer(0)
     self.buffer_table.bind_to_storage_buffer(1)
-    self.buffer_table_sorted.bind_to_storage_buffer(2)
-    self.buffer_cell_start.bind_to_storage_buffer(3)
 
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
     self.query_debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish() # wait for compute shader to finish
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+
+    # self.ctx.finish() # wait for compute shader to finish
+
+    # with self.query:
+    #     self.program['SPATIAL_HASH_2'].run(x)
+    # self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+
+    self.buffer_table.bind_to_storage_buffer(0)
+    t1 = perf_counter()
+    self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+    t2 = perf_counter()
+    t = (t2 - t1) * 1000
+    self.query_debug_values['bitonic merge sort'] = t
+    # print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
+
+
+
+    self.buffer_table.bind_to_storage_buffer(0)
+    self.buffer_cell_start.bind_to_storage_buffer(1)
 
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
     self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish() # wait for compute shader to finish
-
-
-    # exit()
 
     # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
     # print(data)
 
-    # data = self.buffer_table_sorted.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
+    # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
     # print(data)
@@ -111,7 +125,7 @@ def update(self, time_since_start, frametime):
     self.vao_1, self.vao_2 = self.vao_2, self.vao_1
     self.a, self.b = self.b, self.a
 
-    self.buffer_table_sorted.bind_to_storage_buffer(2)
+    self.buffer_table.bind_to_storage_buffer(2)
     self.buffer_cell_start.bind_to_storage_buffer(3)
 
     with self.query:
