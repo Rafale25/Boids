@@ -2,7 +2,7 @@
 
 #define LOCAL_SIZE_X 0
 
-layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
 // struct Boid {
 //     vec3 pos;
@@ -24,22 +24,23 @@ layout(std430, binding=0) readonly buffer buffer_0 {
     Boid boids[];
 };
 
-layout(std430, binding=1) buffer buffer_1 {
+layout(std430, binding=1) writeonly buffer buffer_1 {
     Cell table[];
 };
 
 
-// uniform float map_size;
 uniform float cell_spacing;
 uniform uint table_size;
 
-ivec3 cell_xyz(vec3 pos) {
+ivec3 cell_xyz(vec3 pos)
+{
     return ivec3(floor(pos/cell_spacing));
 }
 
 uint hash(ivec3 cell_index) {
     int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     return abs(h) % table_size;
+
     // const uint p1 = 73856093; // some large primes
     // const uint p2 = 19349663;
     // const uint p3 = 83492791;

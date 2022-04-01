@@ -53,7 +53,7 @@ def update(self, time_since_start, frametime):
     # print(x)
 
     # self.buffer_table.clear()
-    # self.buffer_cell_start.clear()
+    self.buffer_cell_start.clear()
 
     self.buffer_1.bind_to_storage_buffer(0)
     self.buffer_table.bind_to_storage_buffer(1)
@@ -90,6 +90,7 @@ def update(self, time_since_start, frametime):
     self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
 
+    self.ctx.finish()
     # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
