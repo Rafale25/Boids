@@ -53,8 +53,9 @@ uniform float separation_force;
 uniform float alignment_force;
 uniform float cohesion_force;
 
+// uniform uint table_size;
 uniform float cell_spacing;
-uniform uint table_size;
+uniform uint total_grid_cell_count;
 
 
 float distSquared(vec3 A, vec3 B) {
@@ -70,7 +71,7 @@ ivec3 cell_xyz(vec3 pos)
 uint hash(ivec3 cell_index)
 {
     const int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
-    return abs(h) % table_size;
+    return abs(h) % total_grid_cell_count;
     // const uint p1 = 73856093; // some large primes
     // const uint p2 = 19349663;
     // const uint p3 = 83492791;
@@ -107,7 +108,9 @@ void main() {
 
                 const uint hash_index = hash(ivec3(x, y, z));
 
+                if (cell_start[hash_index] == 0xFFFFFFFF) continue;
                 for (uint j = cell_start[hash_index] ; sorted_table[j].cell_id == hash_index ; ++j) {
+                    // if (j == 0xFFFFFFFF) break;
                     const uint i = sorted_table[j].boid_id;
                     if (id == i) continue; // don't check if itself
 

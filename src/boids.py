@@ -38,13 +38,13 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.pause = False
 
-        self.local_size_x = 512
+        self.local_size_x = 512#512
         self.min_boids = self.local_size_x
-        self.max_boids = self.local_size_x * 150
-        self.map_size = 25
+        self.max_boids = 2**16#self.local_size_x * 150
+        self.map_size = 150
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = self.local_size_x*64#*128*1 ## must be a power of 2 or it the sort will not work
+        self.boid_count = self.local_size_x*128*8*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -205,10 +205,11 @@ class MyWindow(moderngl_window.WindowConfig):
         ## Spatial Hash
         ## --------------------------------------------------------
         self.cell_spacing = 1.0
-        self.table_size = int(self.boid_count)
+        self.table_size = int(self.boid_count) #Should always be boid_count for this algorithm
+        self.total_grid_cell_count = self.boid_count#int(self.map_size**3 / self.cell_spacing)
 
         self.buffer_table = self.ctx.buffer(reserve=2*4*self.table_size, dynamic=True)
-        self.buffer_cell_start = self.ctx.buffer(reserve=4*self.table_size, dynamic=True)
+        self.buffer_cell_start = self.ctx.buffer(reserve=4*self.total_grid_cell_count, dynamic=True)
 
         ## Compass
         ## --------------------------------------------------------

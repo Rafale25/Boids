@@ -43,6 +43,15 @@ def gui_newFrame(self):
         max_value=5,
         format="%.1f")
 
+    changed, self.total_grid_cell_count = imgui.drag_int(
+        label="total grid cell count",
+        value=self.total_grid_cell_count,
+        # change_speed=1000,
+        min_value=2,
+        max_value=int(self.map_size**3 / self.cell_spacing))
+    if changed:
+        self.resize_boids_buffer(self.boid_count)
+
     imgui.new_line()
 
     changed, self.speed = imgui.drag_float(

@@ -28,9 +28,8 @@ layout(std430, binding=1) writeonly buffer buffer_1 {
     Cell table[];
 };
 
-
 uniform float cell_spacing;
-uniform uint table_size;
+uniform uint total_grid_cell_count;
 
 ivec3 cell_xyz(vec3 pos)
 {
@@ -39,13 +38,13 @@ ivec3 cell_xyz(vec3 pos)
 
 uint hash(ivec3 cell_index) {
     int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
-    return abs(h) % table_size;
+    return abs(h) % total_grid_cell_count;
 
     // const uint p1 = 73856093; // some large primes
     // const uint p2 = 19349663;
     // const uint p3 = 83492791;
     // uint n = p1 * cell_index.x ^ p2*cell_index.y ^ p3*cell_index.z;
-    // n %= (table_size);
+    // n %= (total_grid_cell_count);
     // return n;
 }
 
