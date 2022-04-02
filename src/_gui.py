@@ -47,7 +47,7 @@ def gui_newFrame(self):
         label="total grid cell count",
         value=self.total_grid_cell_count,
         # change_speed=1000,
-        min_value=2,
+        min_value=4,
         max_value=int(self.map_size**3 / self.cell_spacing))
     if changed:
         self.resize_boids_buffer(self.boid_count)
