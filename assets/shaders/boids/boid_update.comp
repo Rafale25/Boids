@@ -53,10 +53,8 @@ uniform float separation_force;
 uniform float alignment_force;
 uniform float cohesion_force;
 
-// uniform uint table_size;
 uniform float cell_spacing;
 uniform uint total_grid_cell_count;
-// uniform uint
 
 float distSquared(vec3 A, vec3 B) {
     const vec3 C = A - B;
@@ -68,20 +66,7 @@ ivec3 cell_xyz(vec3 pos)
     return ivec3(floor(pos / cell_spacing));
 }
 
-uint hash(ivec3 cell_index)
-{
-    // const int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
-    // return abs(h) % total_grid_cell_count;
-
-    // rolling grid
-    const uint MAX_SIZE = 80;
-    uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
-            (cell_index.y * MAX_SIZE) +
-            cell_index.x;
-
-    return i % total_grid_cell_count;
-}
-
+#include shaders/boids/hash.glsl
 
 void main() {
     const uint id = gl_GlobalInvocationID.x;
