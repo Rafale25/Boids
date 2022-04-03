@@ -56,7 +56,7 @@ uniform float cohesion_force;
 // uniform uint table_size;
 uniform float cell_spacing;
 uniform uint total_grid_cell_count;
-
+// uniform uint
 
 float distSquared(vec3 A, vec3 B) {
     const vec3 C = A - B;
@@ -74,8 +74,7 @@ uint hash(ivec3 cell_index)
     // return abs(h) % total_grid_cell_count;
 
     // rolling grid
-    const int MAX_SIZE = 80;
-
+    const uint MAX_SIZE = 80;
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;

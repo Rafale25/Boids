@@ -30,6 +30,7 @@ layout(std430, binding=1) writeonly buffer buffer_1 {
 
 uniform float cell_spacing;
 uniform uint total_grid_cell_count;
+// uniform uint
 
 ivec3 cell_xyz(vec3 pos)
 {
@@ -39,8 +40,16 @@ ivec3 cell_xyz(vec3 pos)
 uint hash(ivec3 cell_index) {
     // int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
     // return abs(h) % total_grid_cell_count;
-    const int MAX_SIZE = 80;
 
+    // const int MAX_SIZE = 64;
+    // const uint maskx = MAX_SIZE-1;
+    // const uint masky = MAX_SIZE-1;
+    // const uint maskz = MAX_SIZE-1;
+    // const uint width = MAX_SIZE;
+    // const uint width_height = MAX_SIZE*MAX_SIZE;
+    // return (cell_index.x&maskx)+(cell_index.y&masky)*width+(cell_index.z&maskz)*width_height;
+
+    const uint MAX_SIZE = 80;
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;

@@ -35,19 +35,11 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['alignment_force'] = self.alignment_force * 0.03
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
-    # self.program[self.map_type]['table_size'] = self.table_size
     self.program[self.map_type]['cell_spacing'] = self.cell_spacing
     self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
 
-    # self.program['SPATIAL_HASH']['map_size'] = self.map_size
-    # self.program['SPATIAL_HASH']['boid_count'] = self.boid_count
-    # self.program['SPATIAL_HASH_1']['table_size'] = self.table_size
     self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
     self.program['SPATIAL_HASH_1']['total_grid_cell_count'] = self.total_grid_cell_count
-
-    # self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
-    # self.program['SPATIAL_HASH_2']['cell_spacing'] = self.cell_spacing
-    # self.program['SPATIAL_HASH_2']['table_size'] = self.table_size
 
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
