@@ -20,9 +20,9 @@ layout(std430, binding=1) writeonly buffer buffer_3 {
 void main() {
     const uint index = gl_GlobalInvocationID.x;
 
-    cell_start[index] = 0xFFFFFFFF;
-
-    memoryBarrier();
+    // cell_start[index] = 0xFFFFFFFF;
+    //
+    // memoryBarrier();
 
     if (index == 0) {
         cell_start[table[index].cell_id] = index;

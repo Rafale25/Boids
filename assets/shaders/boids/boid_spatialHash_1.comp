@@ -37,15 +37,15 @@ ivec3 cell_xyz(vec3 pos)
 }
 
 uint hash(ivec3 cell_index) {
-    int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
-    return abs(h) % total_grid_cell_count;
+    // int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);
+    // return abs(h) % total_grid_cell_count;
+    const int MAX_SIZE = 80;
 
-    // const uint p1 = 73856093; // some large primes
-    // const uint p2 = 19349663;
-    // const uint p3 = 83492791;
-    // uint n = p1 * cell_index.x ^ p2*cell_index.y ^ p3*cell_index.z;
-    // n %= (total_grid_cell_count);
-    // return n;
+    uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
+            (cell_index.y * MAX_SIZE) +
+            cell_index.x;
+
+    return i % total_grid_cell_count;
 }
 
 

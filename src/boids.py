@@ -41,7 +41,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512#512
         self.min_boids = self.local_size_x
         self.max_boids = 2**16#self.local_size_x * 150
-        self.map_size = 50
+        self.map_size = 60
         self.map_type = MapType.MAP_CUBE
 
         self.boid_count = self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
