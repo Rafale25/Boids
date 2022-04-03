@@ -66,9 +66,14 @@ def update(self, time_since_start, frametime):
     # self.buffer_table.clear()
     # self.buffer_cell_start.clear()
 
-    # self.ctx.finish()
 
     self.buffer_1.bind_to_storage_buffer(0)
+
+    # if self.b:
+    #     self.buffer_1.bind_to_storage_buffer(0)
+    # else:
+    #     self.buffer_2.bind_to_storage_buffer(0)
+
     self.buffer_table.bind_to_storage_buffer(1)
 
     with self.query:
@@ -148,8 +153,7 @@ def update(self, time_since_start, frametime):
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
     self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
-
-
+    self.query_debug_values['boids compute samples'] = self.query.samples / 4
 
 
 """
