@@ -206,7 +206,7 @@ class MyWindow(moderngl_window.WindowConfig):
         ## --------------------------------------------------------
         self.cell_spacing = 1.0
         self.table_size = int(self.boid_count) #Should always be boid_count for this algorithm
-        self.total_grid_cell_count = self.boid_count#int(self.map_size**3 / self.cell_spacing)
+        self.total_grid_cell_count = self.boid_count*1#int(self.map_size**3 / self.cell_spacing)
 
         self.buffer_table = self.ctx.buffer(reserve=2*4*self.table_size, dynamic=True)
         self.buffer_cell_start = self.ctx.buffer(reserve=4*self.total_grid_cell_count, dynamic=True)

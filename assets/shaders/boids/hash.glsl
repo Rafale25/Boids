@@ -6,6 +6,14 @@ uint hash(ivec3 cell_index)
             cell_index.x;
 
     return i % total_grid_cell_count;
+
+    // const int MAX_SIZE = 64;
+    // const uint maskx = MAX_SIZE-1;
+    // const uint masky = MAX_SIZE-1;
+    // const uint maskz = MAX_SIZE-1;
+    // const uint width = MAX_SIZE;
+    // const uint width_height = MAX_SIZE*MAX_SIZE;
+    // return (cell_index.x&maskx)+(cell_index.y&masky)*width+(cell_index.z&maskz)*width_height;
 }
 
 // const int h = (cell_index.x * 92837111) ^ (cell_index.y * 689287499) ^ (cell_index.z * 283923481);

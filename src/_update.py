@@ -36,13 +36,29 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
     self.program[self.map_type]['cell_spacing'] = self.cell_spacing
-    self.program[self.map_type]['map_size'] = self.map_size
-    self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
+    try:
+        self.program[self.map_type]['map_size'] = self.map_size
+    except:
+        pass
+    try:
+        self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
+    except:
+        pass
 
-    self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
-    self.program['SPATIAL_HASH_1']['total_grid_cell_count'] = self.total_grid_cell_count
-    self.program['SPATIAL_HASH_1']['map_size'] = self.map_size
+    try:
+        self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
+    except:
+        pass
 
+    try:
+        self.program['SPATIAL_HASH_1']['total_grid_cell_count'] = self.total_grid_cell_count
+    except:
+        pass
+
+    try:
+        self.program['SPATIAL_HASH_1']['map_size'] = self.map_size
+    except:
+        pass
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
     # print(x)
@@ -119,7 +135,6 @@ def update(self, time_since_start, frametime):
     # print(data)
 
     # exit()
-
 
     # bind correct boid buffer
     self.buffer_1.bind_to_storage_buffer(self.a)
