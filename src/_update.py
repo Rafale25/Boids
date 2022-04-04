@@ -20,7 +20,8 @@ def update(self, time_since_start, frametime):
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
-    if self.pause: return
+    if self.pause:
+        return
 
 
     self.program['BORDER']['map_size'] = self.map_size
@@ -153,7 +154,6 @@ def update(self, time_since_start, frametime):
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
     self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
-    self.query_debug_values['boids compute samples'] = self.query.samples / 4
 
 
 """

@@ -19,10 +19,10 @@ def gui_newFrame(self):
 
     changed, self.map_size = imgui.drag_int(
         label="Map Size",
-        value=self.map_size ,
+        value=self.map_size,
         change_speed=0.1,
         min_value=10,
-        max_value=100,)
+        max_value=100)
 
     changed, new_boid_count = imgui.drag_int(
         label="Boid Count",

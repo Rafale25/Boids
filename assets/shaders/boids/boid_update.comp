@@ -99,6 +99,9 @@ void main() {
                     const uint i = sorted_table[j].boid_id;
                     if (id == i) continue; // don't check if itself
 
+                    // const Boid otherBoid = In_boids.boids[i];
+                    // const vec3 theirPos = otherBoid.pos.xyz;
+                    // const vec3 theirDir = otherBoid.dir.xyz;
                     const vec3 theirPos = In_boids.boids[i].pos.xyz;
                     const vec3 theirDir = In_boids.boids[i].dir.xyz;
 

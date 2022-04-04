@@ -12,7 +12,6 @@ def render(self, time_since_start, frametime):
 
     # self.ctx.enable_only(moderngl.NOTHING)
     self.compass.render(program=self.program['LINES'])
-    # self.ctx.enable_only(moderngl.CULL_FACE | moderngl.DEPTH_TEST)
 
     with self.query:
         self.vao_1.render(instances=self.boid_count)
@@ -25,6 +24,7 @@ def render(self, time_since_start, frametime):
     self.ctx.disable(moderngl.DEPTH_TEST)
     self.gui_newFrame()
     self.gui_draw()
+
 
     # back to default pipeline
     # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
