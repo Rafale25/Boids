@@ -44,7 +44,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 40
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**18#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**17#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
