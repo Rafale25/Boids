@@ -38,10 +38,10 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.pause = False
 
-        self.local_size_x = 16 ## works best for my "rtx 2080 super"
+        self.local_size_x = 16 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**17#self.local_size_x * 150
-        self.map_size = 70
+        self.map_size = 40
         self.map_type = MapType.MAP_CUBE
 
         self.boid_count = 2**18#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work

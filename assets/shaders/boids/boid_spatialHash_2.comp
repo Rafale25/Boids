@@ -17,8 +17,13 @@ layout(std430, binding=1) writeonly buffer buffer_3 {
     uint cell_start[];
 };
 
+uniform uint boid_count;
+
 void main() {
     const uint index = gl_GlobalInvocationID.x;
+
+    if (index >= boid_count)
+        return;
 
     if (index == 0) {
         cell_start[table[index].cell_id] = index;

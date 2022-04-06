@@ -31,21 +31,21 @@ layout(std430, binding=1) writeonly buffer buffer_1 {
 uniform float cell_spacing;
 uniform uint total_grid_cell_count;
 uniform uint map_size;
+uniform uint boid_count;
 
-ivec3 cell_xyz(vec3 pos)
-{
-    return ivec3(floor(pos/cell_spacing));
-}
-
+#include shaders/boids/cell_xyz.glsl
 #include shaders/boids/hash.glsl
 
 void main() {
-    const uint boid_index = gl_GlobalInvocationID.x;
+    const uint index = gl_GlobalInvocationID.x;
 
-    const Boid boid = boids[boid_index];
+    if (index >= boid_count)
+        return;
+
+    const Boid boid = boids[index];
     ivec3 cell_index = cell_xyz(boid.pos.xyz);
     uint hash_index = hash(cell_index);
 
-    table[boid_index].cell_id = hash_index;
-    table[boid_index].boid_id = boid_index;
+    table[index].cell_id = hash_index;
+    table[index].boid_id = index;
 }

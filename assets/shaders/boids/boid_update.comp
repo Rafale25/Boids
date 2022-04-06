@@ -61,11 +61,7 @@ float distSquared(vec3 A, vec3 B) {
     return dot(C, C);
 }
 
-ivec3 cell_xyz(vec3 pos)
-{
-    return ivec3(floor(pos / cell_spacing));
-}
-
+#include shaders/boids/cell_xyz.glsl
 #include shaders/boids/hash.glsl
 
 void main() {
@@ -88,49 +84,49 @@ void main() {
     const ivec3 high = cell_xyz(ourPos + view_distance);
 
     // cull cells out of field of view
+    for (int z = low.z; z <= high.z; ++z) {
+    for (int y = low.y; y <= high.y; ++y) {
     for (int x = low.x; x <= high.x; ++x) {
-        for (int y = low.y; y <= high.y; ++y) {
-            for (int z = low.z; z <= high.z; ++z) {
 
-                vec3 cellPos = vec3(x, y, z) + 0.5;
+        vec3 cellPos = vec3(x, y, z) + 0.5;
 
-                float r = dot((cellPos - ourPos)/length(cellPos - ourPos), ourDir/length(ourDir));
-                if (length(acos(r)) <= view_angle) {
+        float r = dot((cellPos - ourPos)/length(cellPos - ourPos), ourDir/length(ourDir));
+        if (length(acos(r)) <= view_angle) {
 
 
-                    const uint hash_index = hash(ivec3(x, y, z));
+            const uint hash_index = hash(ivec3(x, y, z));
 
-                    // if (cell_start[hash_index] == 0xFFFFFFFF) continue;
-                    for (uint j = cell_start[hash_index] ; sorted_table[j].cell_id == hash_index ; ++j) {
-                        // if (j == 0xFFFFFFFF) break;
-                        const uint i = sorted_table[j].boid_id;
-                        if (id == i) continue; // don't check if itself
+            // if (cell_start[hash_index] == 0xFFFFFFFF) continue;
+            for (uint j = cell_start[hash_index] ; sorted_table[j].cell_id == hash_index ; ++j) {
+                // if (j == 0xFFFFFFFF) break;
+                const uint i = sorted_table[j].boid_id;
+                if (id == i) continue; // don't check if itself
 
-                        // const Boid otherBoid = In_boids.boids[i];
-                        // const vec3 theirPos = otherBoid.pos.xyz;
-                        // const vec3 theirDir = otherBoid.dir.xyz;
-                        const vec3 theirPos = In_boids.boids[i].pos.xyz;
-                        const vec3 theirDir = In_boids.boids[i].dir.xyz;
+                // const Boid otherBoid = In_boids.boids[i];
+                // const vec3 theirPos = otherBoid.pos.xyz;
+                // const vec3 theirDir = otherBoid.dir.xyz;
+                const vec3 theirPos = In_boids.boids[i].pos.xyz;
+                const vec3 theirDir = In_boids.boids[i].dir.xyz;
 
-                        const vec3 offset = ourPos - theirPos;
-                        const float sqrDist = dot(offset, offset);
-                        if (sqrDist < view_distance * view_distance) {
+                const vec3 offset = ourPos - theirPos;
+                const float sqrDist = dot(offset, offset);
+                if (sqrDist < view_distance * view_distance) {
 
-                            // const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir)); // vision max angle ? can't remember
-                            // if (length(acos(r)) <= view_angle) {
-                            nb_flockmates += 1;
-                            averageDirection += theirDir;
-                            averagePosition += theirPos;
+                    // const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir)); // vision max angle ? can't remember
+                    // if (length(acos(r)) <= view_angle) {
+                    nb_flockmates += 1;
+                    averageDirection += theirDir;
+                    averagePosition += theirPos;
 
-                            // separation
-                            totalForce += offset / sqrDist;
-                            // }
-                        }
-                    }
+                    // separation
+                    totalForce += offset / sqrDist;
+                    // }
                 }
-
             }
         }
+
+    }
+    }
     }
 
     // default
