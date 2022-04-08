@@ -5,14 +5,6 @@ from time import perf_counter
 
 from OpenGL import GL
 
-# def hash(x, y, z):
-#     h = int(x * 92837111) ^ int(y * 689287499) ^ int(z * 283923481)
-#     return abs(h)
-#
-# def cell_xyz(x, y, z, spacing):
-#     return floor(x/spacing), floor(y/spacing), floor(z/spacing)
-
-
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
@@ -50,34 +42,29 @@ def update(self, time_since_start, frametime):
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
     # print(x)
 
-    # self.buffer_table.clear()
-    # self.buffer_cell_start.clear()
 
-
-    self.buffer_1.bind_to_storage_buffer(0)
-    # self.buffer_table.bind_to_storage_buffer(1)
+    if self.a == 0:
+        self.buffer_1.bind_to_storage_buffer(0)
+    else:
+        self.buffer_2.bind_to_storage_buffer(0)
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
     self.debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
 
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
-    self.ctx.finish() # wait for compute shader to finish
+    # self.ctx.finish() # wait for compute shader to finish
 
-
-    if self.b:
-        self.buffer_1.bind_to_storage_buffer(0)
-    else:
-        self.buffer_2.bind_to_storage_buffer(0)
     t1 = perf_counter()
     self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
     t2 = perf_counter()
     t = (t2 - t1) * 1000
     self.debug_values['bitonic merge sort'] = t
-    print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
+    # print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
 
-    self.ctx.finish()
+
+    self.buffer_cell_start.bind_to_storage_buffer(1)
 
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
@@ -93,12 +80,12 @@ def update(self, time_since_start, frametime):
 
     # self.ctx.finish()
 
-    data = self.buffer_1.read_chunks(chunk_size=32, start=0, step=32, count=self.boid_count)
-    data = struct.iter_unpack('ffff fffI', data)
-    data = [v[7] for v in data]
+    # data = self.buffer_1.read_chunks(chunk_size=32, start=0, step=32, count=self.boid_count)
+    # data = struct.iter_unpack('ffff fffI', data)
+    # data = [v[7] for v in data]
     # for v in data:
     #     print(v)
-    print(data)
+    # print(data)
     # print()
 
     # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
@@ -122,7 +109,7 @@ def update(self, time_since_start, frametime):
     # data = [v[0] for v in data]
     # print(data)
 
-    exit()
+    # exit()
 
     # bind correct boid buffer
     self.buffer_1.bind_to_storage_buffer(self.a)
@@ -130,8 +117,7 @@ def update(self, time_since_start, frametime):
     self.vao_1, self.vao_2 = self.vao_2, self.vao_1
     self.a, self.b = self.b, self.a
 
-    self.buffer_table.bind_to_storage_buffer(2)
-    self.buffer_cell_start.bind_to_storage_buffer(3)
+    self.buffer_cell_start.bind_to_storage_buffer(2)
 
     with self.query:
         self.program[self.map_type].run(x, 1, 1)

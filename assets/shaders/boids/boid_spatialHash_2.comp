@@ -4,11 +4,6 @@
 
 layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
-// struct Cell {
-//     uint cell_id;
-//     uint boid_id;
-// };
-
 struct Boid {
     vec3 pos;
     uint a; // padding
@@ -16,11 +11,11 @@ struct Boid {
     uint cell_id;
 };
 
-layout(std430, binding=0) readonly buffer buffer_1 {
+layout(std430, binding=0) readonly buffer buffer_boids {
     Boid boids[];
 };
 
-layout(std430, binding=1) writeonly buffer buffer_3 {
+layout(std430, binding=1) writeonly buffer buffer_cell_start {
     uint cell_start[];
 };
 
@@ -37,7 +32,7 @@ void main() {
         return;
     }
 
-    if (boids[index - 1] != boids[index]) {
+    if (boids[index - 1].cell_id != boids[index].cell_id) {
         cell_start[boids[index].cell_id] = index;
         return;
     }
