@@ -30,7 +30,8 @@ void main() {
         return;
     }
 
-    if (table[index - 1] != table[index]) {
+    // if (table[index - 1] != table[index]) {
+    if (table[index - 1].cell_id != table[index].cell_id) {
         cell_start[table[index].cell_id] = index;
         return;
     }
