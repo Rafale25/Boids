@@ -1,13 +1,13 @@
-from math import pi
-
 import imgui
+
+from math import pi
 
 def gui_newFrame(self):
     imgui.new_frame()
     imgui.begin("Properties", True)
 
     imgui.text("fps: {:.2f}".format(self.fps_counter.get_fps()))
-    for query, value in self.query_debug_values.items():
+    for query, value in self.debug_values.items():
         imgui.text("{}: {:.3f} ms".format(query, value))
 
     changed, self.pause = imgui.checkbox("Paused", self.pause)

@@ -7,17 +7,20 @@
 #define eBigFlip 2
 #define eBigDisperse 3
 
-layout(local_size_x=1024, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
 
-struct Cell {
+struct Boid {
+    vec3 pos;
+    uint a; // padding
+    vec3 dir;
     uint cell_id;
-    uint boid_id;
 };
+
 
 layout(std430, binding=0) buffer sort_data
 {
-    Cell value[];
+    Boid value[];
 };
 
 
@@ -27,7 +30,7 @@ uniform uint u_algorithm;
 
 // Workgroup local memory. We use this to minimise round-trips to global memory.
 // It allows us to evaluate a sorting network of up to 1024 with one shader invocation.
-shared Cell local_value[gl_WorkGroupSize.x * 2];
+shared Boid local_value[gl_WorkGroupSize.x * 2];
 
 // naive comparison
 bool is_greater(in const uint left, in const uint right){
@@ -41,13 +44,13 @@ bool is_greater(in const uint left, in const uint right){
 
 void global_compare_and_swap(ivec2 idx){
     if (COMPARE(value[idx.x].cell_id, value[idx.y].cell_id)) {
-        SWAP(Cell, value[idx.x], value[idx.y]);
+        SWAP(Boid, value[idx.x], value[idx.y]);
     }
 }
 
 void local_compare_and_swap(ivec2 idx){
     if (COMPARE(local_value[idx.x].cell_id, local_value[idx.y].cell_id)) {
-        SWAP(Cell, local_value[idx.x], local_value[idx.y]);
+        SWAP(Boid, local_value[idx.x], local_value[idx.y]);
     }
 }
 

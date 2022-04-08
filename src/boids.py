@@ -44,7 +44,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 40
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**17#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 16#2**17#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -69,7 +69,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
         ## Debug
         self.fps_counter = FpsCounter()
-        self.query_debug_values = {}
+        self.debug_values = {}
         self.query = self.ctx.query(samples=False, time=True)
 
 
@@ -299,7 +299,8 @@ class MyWindow(moderngl_window.WindowConfig):
             yield dir[0]  # fx
             yield dir[1]  # fy
             yield dir[2]  # fz
-            yield 69.0 # fuck that too
+
+            yield 0.0 # "fuck that too" actually its cell_id now
 
     from _resize_buffer import resize_boids_buffer
     from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered

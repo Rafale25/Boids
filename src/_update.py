@@ -55,54 +55,50 @@ def update(self, time_since_start, frametime):
 
 
     self.buffer_1.bind_to_storage_buffer(0)
-
-    # if self.b:
-    #     self.buffer_1.bind_to_storage_buffer(0)
-    # else:
-    #     self.buffer_2.bind_to_storage_buffer(0)
-
-    self.buffer_table.bind_to_storage_buffer(1)
+    # self.buffer_table.bind_to_storage_buffer(1)
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
-    self.query_debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
+    self.debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
 
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
-
-    # self.ctx.finish() # wait for compute shader to finish
-
-    # with self.query:
-    #     self.program['SPATIAL_HASH_2'].run(x)
-    # self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+    self.ctx.finish() # wait for compute shader to finish
 
 
-    self.buffer_table.bind_to_storage_buffer(0)
+    if self.b:
+        self.buffer_1.bind_to_storage_buffer(0)
+    else:
+        self.buffer_2.bind_to_storage_buffer(0)
     t1 = perf_counter()
-    self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.table_size)
+    self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
     t2 = perf_counter()
     t = (t2 - t1) * 1000
-    self.query_debug_values['bitonic merge sort'] = t
-    # print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
+    self.debug_values['bitonic merge sort'] = t
+    print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
 
-    # self.ctx.finish()
-
-
-    self.buffer_table.bind_to_storage_buffer(0)
-    self.buffer_cell_start.bind_to_storage_buffer(1)
-
+    self.ctx.finish()
 
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
-    self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+    self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()
 
-    # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # data = [(i, v[0]) for i, v in enumerate(data)]
-    # print(data)
+    # self.buffer_table.bind_to_storage_buffer(0)
+    # self.buffer_cell_start.bind_to_storage_buffer(1)
+    # with self.query:
+    #     self.program['SPATIAL_HASH_2'].run(x)
+    # self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+
+    # self.ctx.finish()
+
+    data = self.buffer_1.read_chunks(chunk_size=32, start=0, step=32, count=self.boid_count)
+    data = struct.iter_unpack('ffff fffI', data)
+    data = [v[7] for v in data]
+    # for v in data:
+    #     print(v)
+    print(data)
     # print()
 
     # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
@@ -126,7 +122,7 @@ def update(self, time_since_start, frametime):
     # data = [v[0] for v in data]
     # print(data)
 
-    # exit()
+    exit()
 
     # bind correct boid buffer
     self.buffer_1.bind_to_storage_buffer(self.a)
@@ -139,41 +135,4 @@ def update(self, time_since_start, frametime):
 
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
-    self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
-
-
-"""
-// old spatial hashing
-
-cell_start = [0] * self.table_size
-cell_entries = [0] * self.boid_count
-
-data = self.buffer_1.read_chunks(chunk_size=4*3, start=0, step=4*8, count=self.boid_count)
-data = list(struct.iter_unpack('fff', data))
-
-for idx, boid in enumerate(data):
-    x, y, z = cell_xyz(boid[0], boid[1], boid[2], self.cell_spacing)
-    i = hash(x, y, z) % self.table_sif.program['SPATIAL_HASH']['map_size'] = self.map_size
-    # selze
-    cell_start[i] += 1
-
-for idx in range(1, self.table_size):
-    cell_start[idx] += cell_start[idx - 1]
-
-for idx, boid in enumerate(data):
-    x, y, z = cell_xyz(boid[0], boid[1], boid[2], self.cell_spacing)
-    i = hash(x, y, z) % self.table_size
-
-    cell_start[i] -= 1
-    cell_entries[cell_start[i]] = idx
-
-
-cell_start[:] = [[v, 0, 0, 0] for v in cell_start]
-cell_start[:] = [item for sublist in cell_start for item in sublist]
-
-cell_entries[:] = [[v, 0, 0, 0] for v in cell_entries]
-cell_entries[:] = [item for sublist in cell_entries for item in sublist]
-
-self.buffer_cell_start.write(array('I', cell_start))
-self.buffer_cell_entries.write(array('I', cell_entries))
-"""
+    self.debug_values['boids compute'] = self.query.elapsed * 10e-7

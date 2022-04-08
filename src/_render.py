@@ -15,7 +15,7 @@ def render(self, time_since_start, frametime):
 
     with self.query:
         self.vao_1.render(instances=self.boid_count)
-    self.query_debug_values['boids render'] = self.query.elapsed * 10e-7
+    self.debug_values['boids render'] = self.query.elapsed * 10e-7
 
     if (self.map_type == MapType.MAP_CUBE or self.map_type == MapType.MAP_CUBE_T):
         self.borders.render(program=self.program['BORDER'])
