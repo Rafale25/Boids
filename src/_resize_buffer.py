@@ -8,6 +8,7 @@ def resize_boids_buffer(self, new_count):
     self.buffer_2.orphan(new_count * 32)
 
     ## resize hash buffers too
+    self.total_grid_cell_count = self.boid_count
     self.buffer_cell_start.orphan(4*self.total_grid_cell_count)
 
     if new_count > self.boid_count:

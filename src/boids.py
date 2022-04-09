@@ -26,8 +26,8 @@ from _mapType import MapType
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
-    window_size = (1280, 720)
-    fullscreen = True
+    window_size = (1920, 1080)
+    fullscreen = False
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
@@ -41,10 +41,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**18#self.local_size_x * 150
-        self.map_size = 60
+        self.map_size = 80
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**17#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**19#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -66,6 +66,7 @@ class MyWindow(moderngl_window.WindowConfig):
         )
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
+        self._shift = False
 
         ## Debug
         self.fps_counter = FpsCounter()

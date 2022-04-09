@@ -12,6 +12,9 @@ def resize(self, width: int, height: int):
 def key_event(self, key, action, modifiers):
     self.imgui.key_event(key, action, modifiers)
 
+    self._shift = (key == 65505 and action == self.wnd.keys.ACTION_PRESS)
+
+
     if action == self.wnd.keys.ACTION_PRESS:
         if key == self.wnd.keys.SPACE:
             self.pause = not self.pause
@@ -31,6 +34,8 @@ def mouse_drag_event(self, x, y, dx, dy):
 def mouse_scroll_event(self, x_offset, y_offset):
     self.imgui.mouse_scroll_event(x_offset, y_offset)
 
+    if self._shift:
+        y_offset *= 4
     self.camera.zoom_state(y_offset)
 
 def mouse_press_event(self, x, y, button):
