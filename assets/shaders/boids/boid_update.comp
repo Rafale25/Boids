@@ -11,12 +11,7 @@
 
 layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
-struct Boid {
-    vec3 pos;
-    uint a; // padding
-    vec3 dir;
-    uint cell_id;
-};
+#include shaders/boids/boid_struct.glsl
 
 layout(std430, binding=0) readonly buffer boids_in {
     Boid boids[];
@@ -83,6 +78,7 @@ void main() {
             const uint hash_index = hash(ivec3(x, y, z));
 
             // if (cell_start[hash_index] == 0xFFFFFFFF) continue;
+            // TODO: read In_boids.boids[j] since all the data is in the boid buffer now
             for (uint j = cell_start[hash_index] ; In_boids.boids[j].cell_id == hash_index ; ++j) {
                 if (id == j) continue; // don't check if itself
 

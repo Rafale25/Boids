@@ -9,22 +9,13 @@
 
 layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
-
-struct Boid {
-    vec3 pos;
-    uint a; // padding
-    vec3 dir;
-    uint cell_id;
-};
-
+#include shaders/boids/boid_struct.glsl
 
 layout(std430, binding=0) buffer sort_data
 {
     Boid value[];
 };
 
-
-// uniform uint algorithm;
 uniform uint u_h;
 uniform uint u_algorithm;
 
