@@ -42,11 +42,13 @@ def update(self, time_since_start, frametime):
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
     # print(x)
 
+    ## still a problem, there's some frame where stuff takes a lot of time
 
     if self.a == 0:
         self.buffer_1.bind_to_storage_buffer(0)
     else:
         self.buffer_2.bind_to_storage_buffer(0)
+
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
@@ -69,6 +71,8 @@ def update(self, time_since_start, frametime):
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
     self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+
+
 
     # self.ctx.finish()
 
@@ -110,6 +114,8 @@ def update(self, time_since_start, frametime):
     # print(data)
 
     # exit()
+
+
 
     # bind correct boid buffer
     self.buffer_1.bind_to_storage_buffer(self.a)

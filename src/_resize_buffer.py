@@ -9,8 +9,8 @@ def resize_boids_buffer(self, new_count):
 
     ## resize hash buffers too
     # self.table_size = int(new_count * 1)
-    self.table_size = int(new_count)
-    self.buffer_table.orphan(2*4*self.table_size)
+    # self.table_size = int(new_count)
+    # self.buffer_table.orphan(2*4*self.table_size)
     self.buffer_cell_start.orphan(4*self.total_grid_cell_count)
 
     if new_count > self.boid_count:
