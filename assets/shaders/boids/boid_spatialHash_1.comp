@@ -4,23 +4,12 @@
 
 layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
-// struct Boid {
-//     vec3 pos;
-//     float a; // padding
-//     vec3 dir;
-//     float b; // padding
-// };
 struct Boid {
     vec3 pos;
     float a; // padding
     vec3 dir;
     uint cell_id;
 };
-
-// struct Cell {
-//     uint cell_id;
-//     uint boid_id;
-// };
 
 layout(std430, binding=0) buffer buffer_0 {
     Boid boids[];
