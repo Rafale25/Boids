@@ -1,19 +1,17 @@
 #! /usr/bin/python3
 
-import time
-
-from math import pi, cos, sin, ceil
+from math import pi, cos, sin
 from random import uniform
 from array import array
+# import numpy
+# import time
 
 # import pyglet
 import moderngl
 import imgui
-import glm
 
 import moderngl_window
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from moderngl_window.scene import KeyboardCamera
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
 
@@ -44,7 +42,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 60
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**20#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**19#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
