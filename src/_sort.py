@@ -6,7 +6,7 @@ class Algorithm:
     BigFlip = 2
     BigDisperse = 3
 
-def sort(self, program, n=-1, max_workgroup_size=512):
+def sort(self, program, n=-1, max_workgroup_size=1024):
     workgroup_size_x = 1
 
     if n < max_workgroup_size * 2:

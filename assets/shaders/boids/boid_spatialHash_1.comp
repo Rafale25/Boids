@@ -6,8 +6,18 @@ layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
 #include shaders/boids/boid_struct.glsl
 
-layout(std430, binding=0) buffer buffer_0 {
+struct Index {
+    uint boid_index;
+    uint cell_index;
+};
+
+
+layout(std430, binding=0) buffer buffer_boids {
     Boid boids[];
+};
+
+layout(std430, binding=1) buffer buffer_indices {
+    Index indices[];
 };
 
 uniform float cell_spacing;
@@ -28,5 +38,9 @@ void main() {
     ivec3 cell_index = cell_xyz(boid.pos);
     uint cell_id = hash(cell_index);
 
+
     boids[index].cell_id = cell_id;
+
+    indices[index].boid_index = index;
+    indices[index].cell_index = cell_id;
 }

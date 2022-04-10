@@ -5,6 +5,7 @@ from random import uniform
 from array import array
 # import numpy
 # import time
+import struct
 
 # import pyglet
 import moderngl
@@ -27,7 +28,7 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = False
+    vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
 
     def __init__(self, **kwargs):
@@ -38,11 +39,11 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
-        self.max_boids = 2**18#self.local_size_x * 150
-        self.map_size = 100
+        self.max_boids = 2**17#self.local_size_x * 150
+        self.map_size = 50
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**21#self.local_size_x*128*2 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**18 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -103,6 +104,10 @@ class MyWindow(moderngl_window.WindowConfig):
             'BITONIC_MERGE_SORT':
                 self.load_compute_shader(
                     path='./shaders/boids/bitonic_merge_sort.comp'),
+            'SET_BOIDS_BY_INDEX_LIST':
+                self.load_compute_shader(
+                    path='./shaders/boids/boid_spatialHash_ok.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -125,7 +130,7 @@ class MyWindow(moderngl_window.WindowConfig):
         ## Boids
         ## --------------------------------------------------------
         pi3 = (2*pi / 3)
-        radius = 1.2*0.8
+        radius = 1.2 *0.85
         vertices = array('f',
             [
                 # back triangle
@@ -169,11 +174,14 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.buffer_1 = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
         self.buffer_2 = self.ctx.buffer(reserve=self.buffer_1.size)
+        self.ctx.copy_buffer(dst=self.buffer_2, src=self.buffer_1) ##copy buffer_1 into buffer_2
+        self.buffer_indices = self.ctx.buffer(reserve=2*4*self.boid_count)
+
         self.boid_vertices = self.ctx.buffer(data=vertices)
         self.boid_color = self.ctx.buffer(data=color)
 
-        self.buffer_1.bind_to_storage_buffer(0)
-        self.buffer_2.bind_to_storage_buffer(1)
+        # self.buffer_1.bind_to_storage_buffer(0)
+        # self.buffer_2.bind_to_storage_buffer(1)
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
         # self.vbo = self.ctx.buffer(vertices)
@@ -296,7 +304,7 @@ class MyWindow(moderngl_window.WindowConfig):
             yield dir[1]  # fy
             yield dir[2]  # fz
 
-            yield 42.0 # fuck that too
+            yield 42 # fuck that too
 
     from _resize_buffer import resize_boids_buffer
     from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
