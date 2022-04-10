@@ -40,10 +40,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**17#self.local_size_x * 150
-        self.map_size = 50
+        self.map_size = 100
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**18 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**20 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -312,7 +312,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update
+    from _update import update, get_previous_boid_buffer, get_next_boid_buffer, swap_boid_buffers
 
     from _sort import sort
 

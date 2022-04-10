@@ -5,6 +5,19 @@ from time import perf_counter
 
 from OpenGL import GL
 
+def get_previous_boid_buffer(self):
+    if self.a == 0:
+        return self.buffer_1
+    return self.buffer_2
+
+def get_next_boid_buffer(self):
+    if self.a == 0:
+        return self.buffer_2
+    return self.buffer_1
+
+def swap_boid_buffers(self):
+    self.a, self.b = self.b, self.a
+
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
@@ -39,20 +52,15 @@ def update(self, time_since_start, frametime):
 
     self.program['SET_BOIDS_BY_INDEX_LIST']['boid_count'] = self.boid_count
 
-
     self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
 
+
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
-    # print(x)
 
 
 
     ## choose previous boid buffer
-    if self.a == 0:
-        self.buffer_1.bind_to_storage_buffer(0)
-    else:
-        self.buffer_2.bind_to_storage_buffer(0)
-
+    self.get_previous_boid_buffer().bind_to_storage_buffer(0)
     self.buffer_indices.bind_to_storage_buffer(1)
 
     with self.query:
@@ -61,7 +69,7 @@ def update(self, time_since_start, frametime):
 
 
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
-    self.ctx.finish() # wait for compute shader to finish
+    # self.ctx.finish() # wait for compute shader to finish
 
     self.buffer_indices.bind_to_storage_buffer(0)
     t1 = perf_counter()
@@ -73,38 +81,33 @@ def update(self, time_since_start, frametime):
 
     # self.ctx.finish() # wait for compute shader to finish
 
+    # exit()
+
+
+
 
     ## choose next boid buffer as 1
     ## TODO: simplify the ping pong buffer
-    self.buffer_1.bind_to_storage_buffer(self.a)
-    self.buffer_2.bind_to_storage_buffer(self.b)
+    self.get_previous_boid_buffer().bind_to_storage_buffer(0)
+    self.get_next_boid_buffer().bind_to_storage_buffer(1)
     self.buffer_indices.bind_to_storage_buffer(2)
 
     with self.query:
         self.program['SET_BOIDS_BY_INDEX_LIST'].run(x)
     self.debug_values['set boid at index from indices buffer'] = self.query.elapsed * 10e-7
 
+    # self.ctx.finish() # wait for compute shader to finish
 
-    self.ctx.finish() # wait for compute shader to finish
+
+    self.swap_boid_buffers()
 
 
-    if self.a == 0:
-        self.buffer_1.bind_to_storage_buffer(0)
-    else:
-        self.buffer_2.bind_to_storage_buffer(0)
+    self.get_previous_boid_buffer().bind_to_storage_buffer(0)
     self.buffer_cell_start.bind_to_storage_buffer(1)
 
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
     self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
-
-    # self.ctx.finish()
-
-    # self.buffer_table.bind_to_storage_buffer(0)
-    # self.buffer_cell_start.bind_to_storage_buffer(1)
-    # with self.query:
-    #     self.program['SPATIAL_HASH_2'].run(x)
-    # self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()
 
@@ -131,10 +134,10 @@ def update(self, time_since_start, frametime):
 
 
     # bind correct boid buffer
-    self.buffer_1.bind_to_storage_buffer(self.a)
-    self.buffer_2.bind_to_storage_buffer(self.b)
+    self.get_previous_boid_buffer().bind_to_storage_buffer(0)
+    self.get_next_boid_buffer().bind_to_storage_buffer(1)
     self.vao_1, self.vao_2 = self.vao_2, self.vao_1
-    self.a, self.b = self.b, self.a
+    self.swap_boid_buffers()
 
     self.buffer_cell_start.bind_to_storage_buffer(2)
 
