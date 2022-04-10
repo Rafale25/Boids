@@ -60,6 +60,7 @@ def update(self, time_since_start, frametime):
     t1 = perf_counter()
     self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+    self.ctx.finish() # wait for compute shader to finish
     t2 = perf_counter()
     t = (t2 - t1) * 1000
     self.debug_values['bitonic merge sort'] = t
