@@ -85,7 +85,6 @@ def update(self, time_since_start, frametime):
 
 
 
-
     ## choose next boid buffer as 1
     ## TODO: simplify the ping pong buffer
     self.get_previous_boid_buffer().bind_to_storage_buffer(0)
@@ -136,7 +135,7 @@ def update(self, time_since_start, frametime):
     # bind correct boid buffer
     self.get_previous_boid_buffer().bind_to_storage_buffer(0)
     self.get_next_boid_buffer().bind_to_storage_buffer(1)
-    self.vao_1, self.vao_2 = self.vao_2, self.vao_1
+    # self.vao_1, self.vao_2 = self.vao_2, self.vao_1
     self.swap_boid_buffers()
 
     self.buffer_cell_start.bind_to_storage_buffer(2)
@@ -146,16 +145,28 @@ def update(self, time_since_start, frametime):
     self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
 """
-buffer_1 [x, y, z, cell_id, dx, dy, dz, padding]
-buffer_2 ^
+previous_boid_buffer [x, y, z, cell_id, dx, dy, dz, padding]
+next_boid_buffer ^
 cell_start [uint]
 indices [cell_index, boid_index]
 
-bind (previous boid buffer, 0)
+---
+
+bind (previous_boid_buffer, 0)
 bind (indices, 1)
+- set previous_boid_buffer cell_index
+    set boid_index, cell_index of indices
 
-sort (indices, by cell_index)
+bind (indices, 0)
+- sort (indices, by cell_index)
 
+bind (previous_boid_buffer, 0)
+bind (next_boid_buffer, 1)
+bind (indices, 2)
+- use indices to set boid of previous_boid_buffer at sorted index in next_boid_buffer
 
+bind (next_boid_buffer, 0)
+bind (cell_start, 1)
+- set cell_start using next_boid_buffer
 
 """

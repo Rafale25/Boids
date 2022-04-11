@@ -28,7 +28,7 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = False
+    vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
 
     def __init__(self, **kwargs):
@@ -43,7 +43,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 100
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**18 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**19 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -106,7 +106,7 @@ class MyWindow(moderngl_window.WindowConfig):
                     path='./shaders/boids/bitonic_merge_sort.comp'),
             'SET_BOIDS_BY_INDEX_LIST':
                 self.load_compute_shader(
-                    path='./shaders/boids/boid_spatialHash_ok.comp',
+                    path='./shaders/boids/boid_set_at_indice.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             MapType.MAP_CUBE_T:
@@ -130,7 +130,7 @@ class MyWindow(moderngl_window.WindowConfig):
         ## Boids
         ## --------------------------------------------------------
         pi3 = (2*pi / 3)
-        radius = 1.2 *0.85
+        radius = 1.2 #*0.85
         vertices = array('f',
             [
                 # back triangle
@@ -180,8 +180,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.boid_vertices = self.ctx.buffer(data=vertices)
         self.boid_color = self.ctx.buffer(data=color)
 
-        # self.buffer_1.bind_to_storage_buffer(0)
-        # self.buffer_2.bind_to_storage_buffer(1)
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
         # self.vbo = self.ctx.buffer(vertices)
@@ -198,15 +196,15 @@ class MyWindow(moderngl_window.WindowConfig):
                 (self.buffer_1, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
             ],
         )
-
-        self.vao_2 = self.ctx.vertex_array(
-            self.program['BOIDS'],
-            [
-                (self.boid_vertices, '3f', 'in_position'),
-                (self.boid_color, '3f', 'in_color'),
-                (self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
-            ],
-        )
+        # 
+        # self.vao_2 = self.ctx.vertex_array(
+        #     self.program['BOIDS'],
+        #     [
+        #         (self.boid_vertices, '3f', 'in_position'),
+        #         (self.boid_color, '3f', 'in_color'),
+        #         (self.buffer_2, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
+        #     ],
+        # )
 
 
         ## Spatial Hash
