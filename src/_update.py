@@ -16,7 +16,6 @@ def update(self, time_since_start, frametime):
     if self.pause:
         return
 
-
     self.program['BORDER']['map_size'] = self.map_size
 
     self.program[self.map_type]['boid_count'] = self.boid_count
@@ -67,9 +66,6 @@ def update(self, time_since_start, frametime):
 
     # self.ctx.finish() # wait for compute shader to finish
 
-    # exit()
-
-
 
     ## choose next boid buffer as 1
     self.buffer_boid.bind_to_storage_buffer(0)
@@ -81,7 +77,6 @@ def update(self, time_since_start, frametime):
     self.debug_values['set boid at index from indices buffer'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish() # wait for compute shader to finish
-
 
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
@@ -105,14 +100,7 @@ def update(self, time_since_start, frametime):
     # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
     # print("sorted: {}".format(is_sorted))
 
-    # if len(self.is_sorted_count) >= 100:
-    #     print(self.boid_count)
-    #     print(f"is_sorted_count: {self.is_sorted_count}")
-    #     print("percentage of good sort {}%".format((sum(self.is_sorted_count) / 100.0) * 100))
-    #     exit()
-
     # exit()
-
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
@@ -122,29 +110,32 @@ def update(self, time_since_start, frametime):
         self.program[self.map_type].run(x, 1, 1)
     self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
+
 """
-previous_boid_buffer [x, y, z, cell_id, dx, dy, dz, padding]
-next_boid_buffer ^
+CURRENT ALGORITHM
+
+buffer_boid [x, y, z, cell_id, dx, dy, dz, padding]
+buffer_boid_tmp ^
 cell_start [uint]
 indices [cell_index, boid_index]
 
 ---
 
-bind (previous_boid_buffer, 0)
+bind (buffer_boid, 0)
 bind (indices, 1)
-- set previous_boid_buffer cell_index
+- set buffer_boid cell_index
     set boid_index, cell_index of indices
 
 bind (indices, 0)
 - sort (indices, by cell_index)
 
-bind (previous_boid_buffer, 0)
-bind (next_boid_buffer, 1)
+bind (buffer_boid, 0)
+bind (buffer_boid_tmp, 1)
 bind (indices, 2)
-- use indices to set boid of previous_boid_buffer at sorted index in next_boid_buffer
+- use indices to set boid of buffer_boid at sorted index in buffer_boid_tmp
 
-bind (next_boid_buffer, 0)
+bind (buffer_boid_tmp, 0)
 bind (cell_start, 1)
-- set cell_start using next_boid_buffer
+- set cell_start using buffer_boid_tmp
 
 """
