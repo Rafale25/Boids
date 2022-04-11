@@ -14,8 +14,8 @@ def render(self, time_since_start, frametime):
     self.compass.render(program=self.program['LINES'])
 
     with self.query:
-        self.vao_1.render(instances=self.boid_count)
-    self.query_debug_values['boids render'] = self.query.elapsed * 10e-7
+        self.vao.render(instances=self.boid_count)
+    self.debug_values['boids render'] = self.query.elapsed * 10e-7
 
     if (self.map_type == MapType.MAP_CUBE or self.map_type == MapType.MAP_CUBE_T):
         self.borders.render(program=self.program['BORDER'])

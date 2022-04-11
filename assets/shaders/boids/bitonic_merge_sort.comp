@@ -9,25 +9,24 @@
 
 layout(local_size_x=1024, local_size_y=1, local_size_z=1) in;
 
+// #include shaders/boids/boid_struct.glsl
 
-struct Cell {
-    uint cell_id;
-    uint boid_id;
+struct Index {
+    uint boid_index;
+    uint cell_index;
 };
 
 layout(std430, binding=0) buffer sort_data
 {
-    Cell value[];
+    Index value[];
 };
 
-
-// uniform uint algorithm;
 uniform uint u_h;
 uniform uint u_algorithm;
 
 // Workgroup local memory. We use this to minimise round-trips to global memory.
 // It allows us to evaluate a sorting network of up to 1024 with one shader invocation.
-shared Cell local_value[gl_WorkGroupSize.x * 2];
+shared Index local_value[gl_WorkGroupSize.x * 2];
 
 // naive comparison
 bool is_greater(in const uint left, in const uint right){
@@ -40,14 +39,14 @@ bool is_greater(in const uint left, in const uint right){
 #define SWAP(T, x, y) { T tmp = x; x = y; y = tmp; }
 
 void global_compare_and_swap(ivec2 idx){
-    if (COMPARE(value[idx.x].cell_id, value[idx.y].cell_id)) {
-        SWAP(Cell, value[idx.x], value[idx.y]);
+    if (COMPARE(value[idx.x].cell_index, value[idx.y].cell_index)) {
+        SWAP(Index, value[idx.x], value[idx.y]);
     }
 }
 
 void local_compare_and_swap(ivec2 idx){
-    if (COMPARE(local_value[idx.x].cell_id, local_value[idx.y].cell_id)) {
-        SWAP(Cell, local_value[idx.x], local_value[idx.y]);
+    if (COMPARE(local_value[idx.x].cell_index, local_value[idx.y].cell_index)) {
+        SWAP(Index, local_value[idx.x], local_value[idx.y]);
     }
 }
 

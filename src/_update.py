@@ -5,13 +5,6 @@ from time import perf_counter
 
 from OpenGL import GL
 
-# def hash(x, y, z):
-#     h = int(x * 92837111) ^ int(y * 689287499) ^ int(z * 283923481)
-#     return abs(h)
-#
-# def cell_xyz(x, y, z, spacing):
-#     return floor(x/spacing), floor(y/spacing), floor(z/spacing)
-
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
@@ -22,7 +15,6 @@ def update(self, time_since_start, frametime):
 
     if self.pause:
         return
-
 
     self.program['BORDER']['map_size'] = self.map_size
 
@@ -45,135 +37,105 @@ def update(self, time_since_start, frametime):
     self.program['SPATIAL_HASH_1']['total_grid_cell_count'] = self.total_grid_cell_count
     self.program['SPATIAL_HASH_1']['map_size'] = self.map_size
 
+    self.program['SET_BOIDS_BY_INDEX_LIST']['boid_count'] = self.boid_count
+
     self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
 
+
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
-    # print(x)
-
-    # self.buffer_table.clear()
-    # self.buffer_cell_start.clear()
 
 
-    self.buffer_1.bind_to_storage_buffer(0)
-
-    # if self.b:
-    #     self.buffer_1.bind_to_storage_buffer(0)
-    # else:
-    #     self.buffer_2.bind_to_storage_buffer(0)
-
-    self.buffer_table.bind_to_storage_buffer(1)
+    self.buffer_boid.bind_to_storage_buffer(0)
+    self.buffer_indices.bind_to_storage_buffer(1)
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
-    self.query_debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
+    self.debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
+
 
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+    # self.ctx.finish() # wait for compute shader to finish
+
+    self.buffer_indices.bind_to_storage_buffer(0)
+    t1 = perf_counter()
+    self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
+    self.ctx.finish() # wait for compute shader to finish
+    t2 = perf_counter()
+    self.debug_values['bitonic merge sort'] = (t2 - t1) * 1000
+    # print(f"Took {t:.3f}ms to sort {self.boid_count} elements\n")
 
     # self.ctx.finish() # wait for compute shader to finish
 
-    # with self.query:
-    #     self.program['SPATIAL_HASH_2'].run(x)
-    # self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+
+    ## choose next boid buffer as 1
+    self.buffer_boid.bind_to_storage_buffer(0)
+    self.buffer_boid_tmp.bind_to_storage_buffer(1)
+    self.buffer_indices.bind_to_storage_buffer(2)
+
+    with self.query:
+        self.program['SET_BOIDS_BY_INDEX_LIST'].run(x)
+    self.debug_values['set boid at index from indices buffer'] = self.query.elapsed * 10e-7
+
+    # self.ctx.finish() # wait for compute shader to finish
 
 
-    self.buffer_table.bind_to_storage_buffer(0)
-    t1 = perf_counter()
-    self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.table_size)
-    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
-    t2 = perf_counter()
-    t = (t2 - t1) * 1000
-    self.query_debug_values['bitonic merge sort'] = t
-    # print(f"Took {t:.3f}ms to sort {self.table_size} elements\n")
-
-    # self.ctx.finish()
-
-
-    self.buffer_table.bind_to_storage_buffer(0)
+    self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_cell_start.bind_to_storage_buffer(1)
-
 
     with self.query:
         self.program['SPATIAL_HASH_2'].run(x)
-    self.query_debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
+    self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()
 
-    # data = self.buffer_table.read_chunks(chunk_size=4*1, start=0, step=4*2, count=self.table_size)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # data = [(i, v[0]) for i, v in enumerate(data)]
-    # print(data)
-    # print()
-
-    # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # data = [(i, v[0]) for i, v in enumerate(data)]
-    # print(data)
+    # data = self.buffer_2.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
+    # # data = struct.iter_unpack('II', data)
+    # data = struct.iter_unpack('fffIffff', data)
+    # data = [v for v in data]
+    # # print(data[0])
+    # for d in data:
+    #     print(d)
 
 
     # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
     # print("sorted: {}".format(is_sorted))
 
-    # if len(self.is_sorted_count) >= 100:
-    #     print(self.boid_count)
-    #     print(f"is_sorted_count: {self.is_sorted_count}")
-    #     print("percentage of good sort {}%".format((sum(self.is_sorted_count) / 100.0) * 100))
-    #     exit()
-
-    # data = self.buffer_cell_start.read_chunks(chunk_size=4*1, start=0, step=4*1, count=self.table_size)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # print(data)
-
     # exit()
 
-    # bind correct boid buffer
-    self.buffer_1.bind_to_storage_buffer(self.a)
-    self.buffer_2.bind_to_storage_buffer(self.b)
-    self.vao_1, self.vao_2 = self.vao_2, self.vao_1
-    self.a, self.b = self.b, self.a
-
-    self.buffer_table.bind_to_storage_buffer(2)
-    self.buffer_cell_start.bind_to_storage_buffer(3)
+    self.buffer_boid_tmp.bind_to_storage_buffer(0)
+    self.buffer_boid.bind_to_storage_buffer(1)
+    self.buffer_cell_start.bind_to_storage_buffer(2)
 
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
-    self.query_debug_values['boids compute'] = self.query.elapsed * 10e-7
+    self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
 
 """
-// old spatial hashing
+CURRENT ALGORITHM
 
-cell_start = [0] * self.table_size
-cell_entries = [0] * self.boid_count
+buffer_boid [x, y, z, cell_id, dx, dy, dz, padding]
+buffer_boid_tmp ^
+cell_start [uint]
+indices [cell_index, boid_index]
 
-data = self.buffer_1.read_chunks(chunk_size=4*3, start=0, step=4*8, count=self.boid_count)
-data = list(struct.iter_unpack('fff', data))
+---
 
-for idx, boid in enumerate(data):
-    x, y, z = cell_xyz(boid[0], boid[1], boid[2], self.cell_spacing)
-    i = hash(x, y, z) % self.table_sif.program['SPATIAL_HASH']['map_size'] = self.map_size
-    # selze
-    cell_start[i] += 1
+bind (buffer_boid, 0)
+bind (indices, 1)
+- set buffer_boid cell_index
+    set boid_index, cell_index of indices
 
-for idx in range(1, self.table_size):
-    cell_start[idx] += cell_start[idx - 1]
+bind (indices, 0)
+- sort (indices, by cell_index)
 
-for idx, boid in enumerate(data):
-    x, y, z = cell_xyz(boid[0], boid[1], boid[2], self.cell_spacing)
-    i = hash(x, y, z) % self.table_size
+bind (buffer_boid, 0)
+bind (buffer_boid_tmp, 1)
+bind (indices, 2)
+- use indices to set boid of buffer_boid at sorted index in buffer_boid_tmp
 
-    cell_start[i] -= 1
-    cell_entries[cell_start[i]] = idx
+bind (buffer_boid_tmp, 0)
+bind (cell_start, 1)
+- set cell_start using buffer_boid_tmp
 
-
-cell_start[:] = [[v, 0, 0, 0] for v in cell_start]
-cell_start[:] = [item for sublist in cell_start for item in sublist]
-
-cell_entries[:] = [[v, 0, 0, 0] for v in cell_entries]
-cell_entries[:] = [item for sublist in cell_entries for item in sublist]
-
-self.buffer_cell_start.write(array('I', cell_start))
-self.buffer_cell_entries.write(array('I', cell_entries))
 """

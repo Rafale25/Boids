@@ -1,13 +1,13 @@
-from math import pi
-
 import imgui
+
+from math import pi
 
 def gui_newFrame(self):
     imgui.new_frame()
     imgui.begin("Properties", True)
 
     imgui.text("fps: {:.2f}".format(self.fps_counter.get_fps()))
-    for query, value in self.query_debug_values.items():
+    for query, value in self.debug_values.items():
         imgui.text("{}: {:.3f} ms".format(query, value))
 
     changed, self.pause = imgui.checkbox("Paused", self.pause)
@@ -24,14 +24,15 @@ def gui_newFrame(self):
         min_value=10,
         max_value=100)
 
-    changed, new_boid_count = imgui.drag_int(
-        label="Boid Count",
-        value=self.boid_count,
-        change_speed=512,
-        min_value=self.min_boids,
-        max_value=self.max_boids)
-    if changed:
-        self.resize_boids_buffer(new_boid_count)
+    imgui.text("Boid Count: {} ms".format(self.boid_count))
+    # changed, new_boid_count = imgui.drag_int(
+    #     label="Boid Count",
+    #     value=self.boid_count,
+    #     change_speed=512,
+    #     min_value=self.min_boids,
+    #     max_value=self.max_boids)
+    # if changed:
+    #     self.resize_boids_buffer(new_boid_count)
 
     imgui.new_line()
 
