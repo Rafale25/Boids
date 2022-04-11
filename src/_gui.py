@@ -24,14 +24,15 @@ def gui_newFrame(self):
         min_value=10,
         max_value=100)
 
-    changed, new_boid_count = imgui.drag_int(
-        label="Boid Count",
-        value=self.boid_count,
-        change_speed=512,
-        min_value=self.min_boids,
-        max_value=self.max_boids)
-    if changed:
-        self.resize_boids_buffer(new_boid_count)
+    imgui.text("Boid Count: {} ms".format(self.boid_count))
+    # changed, new_boid_count = imgui.drag_int(
+    #     label="Boid Count",
+    #     value=self.boid_count,
+    #     change_speed=512,
+    #     min_value=self.min_boids,
+    #     max_value=self.max_boids)
+    # if changed:
+    #     self.resize_boids_buffer(new_boid_count)
 
     imgui.new_line()
 
