@@ -31,8 +31,6 @@ void main() {
         cell_start[boids[index].cell_id] = index;
         return;
     }
-
-    // cell_start[table[index].cell_id] = 0xFFFFFFFF;
 }
 
 //NOTE: Do not use memoryBarrier() with a number of dispatch that exceed some hardware limit (being around 49 000 for the RTX 2080 super)
