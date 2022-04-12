@@ -5,9 +5,8 @@ from random import uniform
 from array import array
 # import numpy
 # import time
-import struct
+# import struct
 
-# import pyglet
 import moderngl
 import imgui
 
@@ -40,10 +39,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**17#self.local_size_x * 150
-        self.map_size = 100
+        self.map_size = 120
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**19 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**21 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -82,6 +81,13 @@ class MyWindow(moderngl_window.WindowConfig):
                 self.load_program(
                     vertex_shader='./shaders/boids/boid.vert',
                     fragment_shader='./shaders/boids/boid.frag'),
+
+            'BOIDS_GS':
+                self.load_program(
+                    vertex_shader='./shaders/boids/boid_gs.vert',
+                    geometry_shader='./shaders/boids/boid_gs.geom',
+                    fragment_shader='./shaders/boids/boid.frag'),
+
             'BORDER':
                 self.load_program(
                     vertex_shader='./shaders/border/border.vert',
@@ -129,27 +135,28 @@ class MyWindow(moderngl_window.WindowConfig):
         ## --------------------------------------------------------
         pi3 = (2*pi / 3)
         radius = 1.2 #*0.85
-        vertices = array('f',
-            [
-                # back triangle
-                -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
-                -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
-                -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
-                # side triangle 1
-                radius*2, 0, 0,
-                -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
-                -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
-
-                # side triangle 2
-                radius*2, 0, 0,
-                -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
-                -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
-
-                # side triangle 3
-                radius*2, 0, 0,
-                -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
-                -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
-            ])
+        # vertices = array('f',
+        #     [
+        #         # back triangle
+        #         -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
+        #         -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
+        #         -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
+        #         # side triangle 1
+        #         radius*2, 0, 0,
+        #         -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
+        #         -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
+        #
+        #         # side triangle 2
+        #         radius*2, 0, 0,
+        #         -radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5,
+        #         -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
+        #
+        #         # side triangle 3
+        #         radius*2, 0, 0,
+        #         -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
+        #         -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
+        #     ])
+        # vertices = array('f', [0, 0, 0])
 
         color = array('f',
         [
@@ -175,8 +182,8 @@ class MyWindow(moderngl_window.WindowConfig):
         self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_1 into buffer_2
         self.buffer_indices = self.ctx.buffer(reserve=2*4*self.boid_count)
 
-        self.boid_vertices = self.ctx.buffer(data=vertices)
-        self.boid_color = self.ctx.buffer(data=color)
+        # self.boid_vertices = self.ctx.buffer(data=vertices)
+        # self.boid_color = self.ctx.buffer(data=color)
 
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
@@ -187,11 +194,12 @@ class MyWindow(moderngl_window.WindowConfig):
         # self.vao.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
 
         self.vao = self.ctx.vertex_array(
-            self.program['BOIDS'],
+            self.program['BOIDS_GS'],
+            # self.program['BOIDS'],
             [
-                (self.boid_vertices, '3f', 'in_position'),
-                (self.boid_color, '3f', 'in_color'),
-                (self.buffer_boid, '3f 1x4 3f 1x4/i', 'in_pos', 'in_for')
+                # (self.boid_vertices, '3f', 'in_position'),
+                # (self.boid_color, '3f', 'in_color'),
+                (self.buffer_boid, '3f 1x4 3f 1x4', 'in_pos', 'in_for')
             ],
         )
 
@@ -299,7 +307,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update#, get_previous_boid_buffer, get_next_boid_buffer, swap_boid_buffers
+    from _update import update
 
     from _sort import sort
 
