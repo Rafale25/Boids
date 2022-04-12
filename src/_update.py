@@ -5,7 +5,6 @@ from time import perf_counter
 
 from OpenGL import GL
 
-
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
