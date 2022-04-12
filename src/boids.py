@@ -27,7 +27,7 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = True
+    vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
 
     def __init__(self, **kwargs):
@@ -156,26 +156,25 @@ class MyWindow(moderngl_window.WindowConfig):
         #         -radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5,
         #         -radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5,
         #     ])
-        # vertices = array('f', [0, 0, 0])
 
-        color = array('f',
-        [
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-
-            0, 1, 1,
-            0, 1, 1,
-            0, 1, 1,
-        ])
+        # color = array('f',
+        # [
+        #     1, 0, 0,
+        #     1, 0, 0,
+        #     1, 0, 0,
+        #
+        #     0, 1, 0,
+        #     0, 1, 0,
+        #     0, 1, 0,
+        #
+        #     0, 0, 1,
+        #     0, 0, 1,
+        #     0, 0, 1,
+        #
+        #     0, 1, 1,
+        #     0, 1, 1,
+        #     0, 1, 1,
+        # ])
 
         self.buffer_boid = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
         self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
