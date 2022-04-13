@@ -113,30 +113,61 @@ def update(self, time_since_start, frametime):
 
 
 """
-CURRENT ALGORITHM
+Boid algorithm pseudo code
 
-buffer_boid [x, y, z, cell_id, dx, dy, dz, padding]
-buffer_boid_tmp ^
-cell_start [uint]
-indices [cell_index, boid_index]
+Boid {
+    vec3 pos;
+    uint cell_index;
+    vec3 dir;
+    uint padding; // unused
+}
 
----
+Pair {
+    uint boid_index;
+    uint cell_index;
+}
+
+buffer_boid : [Boid]
+buffer_boid_tmp : [Boid]
+buffer_cell_start : [uint] buffer_pairs : [Pair]
+
+
+## update loop
 
 bind (buffer_boid, 0)
-bind (indices, 1)
-- set buffer_boid cell_index
-    set boid_index, cell_index of indices
+bind (buffer_pairs, 1)
+dispatchCall() -> {
+    index = gl_GlobalInvocationID.x
+    cell_index = compute boid cell_index
 
-bind (indices, 0)
-- sort (indices, by cell_index)
+    boid.cell_index = cell_index
+
+    pair.boid_index = index
+    pair.cell_index = cell_index
+}
+
+bind (buffer_pairs, 0)
+dispatchCall() -> {
+    sort buffer_pairs by cell_index
+}
 
 bind (buffer_boid, 0)
 bind (buffer_boid_tmp, 1)
-bind (indices, 2)
-- use indices to set boid of buffer_boid at sorted index in buffer_boid_tmp
+bind (buffer_pairs, 2)
+dispatchCall() -> {
+    use buffer_pairs to set boids from buffer_boid to their sorted place in buffer_boid_tmp
+}  
 
 bind (buffer_boid_tmp, 0)
-bind (cell_start, 1)
-- set cell_start using buffer_boid_tmp
+bind (buffer_cell_start, 1)
+dispatchCall() -> {
+    find and set cell_start in buffer_cell_start by using boid.cell_start
+}
 
+bind (buffer_boid_tmp, 0)
+bind (buffer_boid, 1)
+bind (buffer_cell_start, 2)
+dispatchCall() -> {
+    boids computation
+}
 """
