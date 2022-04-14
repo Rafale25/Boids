@@ -81,9 +81,6 @@ void main() {
             for (uint j = cell_start[hash_index] ; In_boids.boids[j].cell_id == hash_index && j < boid_count ; ++j) {
                 if (id == j) continue; // don't check if itself
 
-                // const Boid otherBoid = In_boids.boids[i];
-                // const vec3 theirPos = otherBoid.pos.xyz;
-                // const vec3 theirDir = otherBoid.dir.xyz;
                 const vec3 theirPos = In_boids.boids[j].pos.xyz;
                 const vec3 theirDir = In_boids.boids[j].dir.xyz;
 

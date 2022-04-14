@@ -38,7 +38,7 @@ def update(self, time_since_start, frametime):
 
     self.program['SET_BOIDS_BY_INDEX_LIST']['boid_count'] = self.boid_count
 
-    self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
+    self.program['SET_CELL_START']['boid_count'] = self.boid_count
 
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
@@ -46,6 +46,7 @@ def update(self, time_since_start, frametime):
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_indices.bind_to_storage_buffer(1)
+
 
     with self.query:
         self.program['SPATIAL_HASH_1'].run(x)
@@ -75,14 +76,15 @@ def update(self, time_since_start, frametime):
         self.program['SET_BOIDS_BY_INDEX_LIST'].run(x)
     self.debug_values['set boid at index from indices buffer'] = self.query.elapsed * 10e-7
 
+
     # self.ctx.finish() # wait for compute shader to finish
 
 
-    self.buffer_boid_tmp.bind_to_storage_buffer(0)
+    self.buffer_indices.bind_to_storage_buffer(0)
     self.buffer_cell_start.bind_to_storage_buffer(1)
 
     with self.query:
-        self.program['SPATIAL_HASH_2'].run(x)
+        self.program['SET_CELL_START'].run(x)
     self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()

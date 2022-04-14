@@ -34,13 +34,13 @@ void main() {
     if (index >= boid_count)
         return;
 
-    const Boid boid = boids[index];
+    const Boid boid = boids[ indices[index].boid_index ];
     ivec3 cell_index = cell_xyz(boid.pos);
     uint cell_id = hash(cell_index);
 
+    // managed to not reset boid_index and tho keep them in the order from last frame
+    boids[ indices[index].boid_index ].cell_id = cell_id;
 
-    boids[index].cell_id = cell_id;
-
-    indices[index].boid_index = index;
+    // indices[index].boid_index = index;
     indices[index].cell_index = cell_id;
 }
