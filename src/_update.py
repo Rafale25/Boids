@@ -41,8 +41,6 @@ def update(self, time_since_start, frametime):
     self.program['SPATIAL_HASH_2']['boid_count'] = self.boid_count
 
 
-    # self.program['BOIDS_GS']['']
-
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
 
