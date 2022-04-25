@@ -91,16 +91,18 @@ def update(self, time_since_start, frametime):
     # for d in data:
     #     print(d)
 
-    # data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # print(data)
-    # print(sum(data))
+    data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
+    data = struct.iter_unpack('I', data)
+    data = [v[0] for v in data]
+    print(data)
+    print(sum(data))
 
     # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
     # print("sorted: {}".format(is_sorted))
 
-    # exit()
+    exit()
+
+    #TODO: THE PREFIX SUM SEEMS TO BE WORKING, THE BOIDS ARE ORDERED IN buffer_boid_tmp, but the simulation is totally broken
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
