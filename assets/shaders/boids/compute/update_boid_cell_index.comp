@@ -1,0 +1,32 @@
+#version 430 core
+
+#define LOCAL_SIZE_X 0
+
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
+
+#include shaders/boids/boid_struct.glsl
+
+layout(std430, binding=0) buffer buffer_boids {
+    Boid boids[];
+};
+
+uniform float cell_spacing;
+uniform uint total_grid_cell_count;
+uniform uint map_size;
+uniform uint boid_count;
+
+#include shaders/boids/cell_xyz.glsl
+#include shaders/boids/hash.glsl
+
+void main() {
+    const uint index = gl_GlobalInvocationID.x;
+
+    if (index >= boid_count)
+        return;
+
+    const Boid boid = boids[index];
+    ivec3 cell_xyz = cell_xyz(boids[index].pos.xyz);
+    uint cell_index = hash(cell_xyz);
+
+    boids[index].cell_index = cell_index;
+}

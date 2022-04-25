@@ -6,6 +6,7 @@ from array import array
 # import numpy
 # import time
 # import struct
+import logging
 
 import moderngl
 import imgui
@@ -27,8 +28,10 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = True
+    vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
+
+    # log_level = logging.ERROR
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -39,10 +42,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**20#self.local_size_x * 150
-        self.map_size = 100
+        self.map_size = 50
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**21 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 512#2**18 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -75,7 +78,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.imgui = ModernglWindowRenderer(self.wnd)
 
 
-        ## Boid -----
         self.program = {
             'BOIDS':
                 self.load_program(
@@ -87,31 +89,43 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/boids/render/boid_gs.vert',
                     geometry_shader='./shaders/boids/render/boid_gs.geom',
                     fragment_shader='./shaders/boids/render/boid.frag'),
-
             'BOIDS_VS':
                 self.load_program(
                     vertex_shader='./shaders/boids/render/boid_vs.vert',
                     fragment_shader='./shaders/boids/render/boid.frag'),
 
-            'RESET_INDICES':
+            'RESET_CELLS':
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/reset_indices.comp',
+                    path='./shaders/boids/compute/reset_cells.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
-            'SPATIAL_HASH_1':
+            'UPDATE_BOID_CELL_INDEX':
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_spatialHash_1.comp',
+                    path='./shaders/boids/compute/update_boid_cell_index.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
-            'SET_CELL_START':
+            'INCREMENT_CELL_COUNTER':
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/set_cell_start.comp',
+                    path='./shaders/boids/compute/increment_cell_counter.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
-            'BITONIC_MERGE_SORT':
-                self.load_compute_shader(
-                    path='./shaders/boids/compute/bitonic_merge_sort.comp'),
-            'SET_BOIDS_BY_INDEX_LIST':
-                self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_set_at_indice.comp',
-                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+
+            # 'RESET_INDICES':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/compute/reset_indices.comp',
+            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
+            # 'SPATIAL_HASH_1':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/compute/boid_spatialHash_1.comp',
+            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
+            # 'SET_CELL_START':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/compute/set_cell_start.comp',
+            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
+            # 'BITONIC_MERGE_SORT':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/compute/bitonic_merge_sort.comp'),
+            # 'SET_BOIDS_BY_INDEX_LIST':
+            #     self.load_compute_shader(
+            #         path='./shaders/boids/compute/boid_set_at_indice.comp',
+            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -140,21 +154,18 @@ class MyWindow(moderngl_window.WindowConfig):
                     fragment_shader='./shaders/line/line.frag'),
         }
 
-        ## Boids
-        ## --------------------------------------------------------
-        pi3 = (2*pi / 3)
-        radius = 1.2 #*0.85
-
+        ## Boids --------------------------------------------------------
         self.buffer_boid = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
         self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
-        self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_1 into buffer_2
-        self.buffer_indices = self.ctx.buffer(reserve=2*4*self.boid_count)
+        self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_boid into buffer_boid_tmp
+        # self.buffer_indices = self.ctx.buffer(reserve=2*4*self.boid_count)
 
+        self.cell_spacing = 1.0
+        self.total_grid_cell_count = self.boid_count
+        # self.buffer_cell_start = self.ctx.buffer(reserve=4*self.total_grid_cell_count, dynamic=True)
 
-        self.buffer_indices.bind_to_storage_buffer(0)
-        self.program['RESET_INDICES']['boid_count'] = self.boid_count
-        self.program['RESET_INDICES'].run(ceil(float(self.boid_count) / self.local_size_x))
-        self.ctx.finish()
+        self.buffer_cell_count = self.ctx.buffer(reserve=4*self.total_grid_cell_count)
+
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
         # self.vbo = self.ctx.buffer(vertices)
@@ -170,21 +181,11 @@ class MyWindow(moderngl_window.WindowConfig):
                 (self.buffer_boid, '3f 1x4 3f 1x4', 'in_pos', 'in_for')
             ],
         )
-
-
         ## vertex pulling
-        self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
+        # self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
 
 
-
-        ## Spatial Hash
-        ## --------------------------------------------------------
-        self.cell_spacing = 1.0
-        self.total_grid_cell_count = self.boid_count#int(self.map_size**3 / self.cell_spacing)
-        self.buffer_cell_start = self.ctx.buffer(reserve=4*self.total_grid_cell_count, dynamic=True)
-
-        ## Compass
-        ## --------------------------------------------------------
+        ## Compass --------------------------------------------------------
         vertices = array('f',
         [
             0.0, 0.0, 0.0,
@@ -214,8 +215,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.compass.buffer(self.ctx.buffer(color), '3f', ['in_color'])
 
 
-        ## Borders
-        ## --------------------------------------------------------
+        ## Borders --------------------------------------------------------
         vertices = array('f',
         [
             -0.5, -0.5, -0.5,
