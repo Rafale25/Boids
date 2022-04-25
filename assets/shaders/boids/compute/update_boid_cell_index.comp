@@ -24,7 +24,7 @@ void main() {
     if (index >= boid_count)
         return;
 
-    const Boid boid = boids[index];
+    // const Boid boid = boids[index];
     ivec3 cell_xyz = cell_xyz(boids[index].pos.xyz);
     uint cell_index = hash(cell_xyz);
 

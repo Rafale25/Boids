@@ -1,0 +1,24 @@
+#version 430 core
+
+#define LOCAL_SIZE_X 0
+
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
+
+layout(std430, binding=0) buffer buffer_cell_count {
+    uint cell_count[];
+};
+
+uniform uint boid_count;
+
+void main() {
+    const uint index = gl_GlobalInvocationID.x;
+
+    if (index >= boid_count)
+        return;
+
+    if (index == 0) {
+        for (int i = 1 ; i < boid_count ; ++i) { // change by total_grid_cell_count
+            cell_count[i] += cell_count[i - 1];
+        }
+    }
+}

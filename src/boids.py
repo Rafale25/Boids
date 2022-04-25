@@ -45,7 +45,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 50
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 512#2**18 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**16 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -105,6 +105,14 @@ class MyWindow(moderngl_window.WindowConfig):
             'INCREMENT_CELL_COUNTER':
                 self.load_compute_shader(
                     path='./shaders/boids/compute/increment_cell_counter.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'PREFIX_SUM':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/prefix_sum/prefix_sum.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'ATOMIC_INCREMENT_CELL_COUNT':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/atomic_increment_cell_count.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             # 'RESET_INDICES':

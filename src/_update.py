@@ -33,11 +33,17 @@ def update(self, time_since_start, frametime):
 
 
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
+
     self.program['INCREMENT_CELL_COUNTER']['boid_count'] = self.boid_count
+
     self.program['UPDATE_BOID_CELL_INDEX']['boid_count'] = self.boid_count
     self.program['UPDATE_BOID_CELL_INDEX']['cell_spacing'] = self.cell_spacing
     self.program['UPDATE_BOID_CELL_INDEX']['total_grid_cell_count'] = self.total_grid_cell_count
     self.program['UPDATE_BOID_CELL_INDEX']['map_size'] = self.map_size
+
+    self.program['PREFIX_SUM']['boid_count'] = self.boid_count
+
+    self.program['ATOMIC_INCREMENT_CELL_COUNT']['boid_count'] = self.boid_count
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
@@ -63,31 +69,47 @@ def update(self, time_since_start, frametime):
 
     self.ctx.finish()
 
-    # data = self.buffer_boid.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
+    self.buffer_cell_count.bind_to_storage_buffer(0)
+    with self.query:
+        self.program['PREFIX_SUM'].run(x)
+    self.debug_values['PREFIX_SUM'] = self.query.elapsed * 10e-7
+
+    self.ctx.finish()
+
+    self.buffer_boid.bind_to_storage_buffer(0)
+    self.buffer_boid_tmp.bind_to_storage_buffer(1)
+    self.buffer_cell_count.bind_to_storage_buffer(2)
+    with self.query:
+        self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
+    self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
+
+    self.ctx.finish()
+
+    # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
     # data = struct.iter_unpack('fffIffff', data)
     # data = [v for v in data]
-    # # print(data)
     # for d in data:
     #     print(d)
 
-    data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
-    data = struct.iter_unpack('I', data)
-    data = [v[0] for v in data]
-    print(data)
-    print(sum(data))
+    # data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
+    # data = struct.iter_unpack('I', data)
+    # data = [v[0] for v in data]
+    # print(data)
+    # print(sum(data))
 
     # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
     # print("sorted: {}".format(is_sorted))
 
-    exit()
+    # exit()
 
-    # self.buffer_boid_tmp.bind_to_storage_buffer(0)
-    # self.buffer_boid.bind_to_storage_buffer(1)
+    self.buffer_boid_tmp.bind_to_storage_buffer(0)
+    self.buffer_boid.bind_to_storage_buffer(1)
+    self.buffer_cell_count.bind_to_storage_buffer(2)
     # self.buffer_cell_start.bind_to_storage_buffer(2)
-    #
-    # with self.query:
-    #     self.program[self.map_type].run(x, 1, 1)
-    # self.debug_values['boids compute'] = self.query.elapsed * 10e-7
+
+    with self.query:
+        self.program[self.map_type].run(x, 1, 1)
+    self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
 
 # self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
