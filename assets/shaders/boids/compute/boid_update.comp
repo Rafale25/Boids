@@ -70,13 +70,12 @@ void main() {
     for (int y = low.y; y <= high.y; ++y) {
     for (int x = low.x; x <= high.x; ++x) {
 
-        vec3 cellPos = vec3(x, y, z) + 0.5;//(cell_spacing * 0.5);
+        vec3 cellPos = vec3(x, y, z) + 0.5;
 
         float r = dot((cellPos - ourPos)/length(cellPos - ourPos), ourDir/length(ourDir));
         if (length(acos(r)) <= view_angle) {
 
             const uint hash_index = hash(ivec3(x, y, z));
-
             // TODO: read In_boids.boids[j] since all the data is in the boid buffer now // tried one time without much success
             for (uint j = cell_start[hash_index] ; In_boids.boids[j].cell_index == hash_index && j < boid_count ; ++j) {
                 if (id == j) continue; // don't check if itself

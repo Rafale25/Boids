@@ -6,11 +6,11 @@ layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
 #include shaders/boids/boid_struct.glsl
 
-layout(std430, binding=0) buffer buffer_boids {
+layout(std430, binding=0) readonly buffer buffer_boids {
     Boid boids[];
 };
 
-layout(std430, binding=1) buffer buffer_boids_tmp {
+layout(std430, binding=1) writeonly buffer buffer_boids_tmp {
     Boid boids_tmp[];
 };
 
@@ -30,5 +30,5 @@ void main() {
 
     uint sorted_index = atomicAdd(cell_count[boid.cell_index], -1);
 
-    boids_tmp[sorted_index] = boid;
+    boids_tmp[sorted_index - 1] = boid;
 }

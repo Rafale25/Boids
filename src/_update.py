@@ -27,10 +27,9 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['alignment_force'] = self.alignment_force * 0.03
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
-    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
     self.program[self.map_type]['map_size'] = self.map_size
+    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
     self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
-
 
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
 
@@ -52,14 +51,14 @@ def update(self, time_since_start, frametime):
         self.program['RESET_CELLS'].run(x)
     self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish()
+    # self.ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     with self.query:
         self.program['UPDATE_BOID_CELL_INDEX'].run(x)
     self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish()
+    # self.ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count.bind_to_storage_buffer(1)
@@ -67,14 +66,14 @@ def update(self, time_since_start, frametime):
         self.program['INCREMENT_CELL_COUNTER'].run(x)
     self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish()
+    # self.ctx.finish()
 
     self.buffer_cell_count.bind_to_storage_buffer(0)
     with self.query:
         self.program['PREFIX_SUM'].run(x)
     self.debug_values['PREFIX_SUM'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish()
+    # self.ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
@@ -83,24 +82,25 @@ def update(self, time_since_start, frametime):
         self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
     self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
 
-    self.ctx.finish()
-
+    # self.ctx.finish()
+    #
     # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
     # data = struct.iter_unpack('fffIffff', data)
     # data = [v for v in data]
     # for d in data:
     #     print(d)
+    # print()
 
-    data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
-    data = struct.iter_unpack('I', data)
-    data = [v[0] for v in data]
-    print(data)
-    print(sum(data))
+    # data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
+    # data = struct.iter_unpack('I', data)
+    # data = [v[0] for v in data]
+    # print(data)
+    # print(sum(data))
 
     # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
     # print("sorted: {}".format(is_sorted))
 
-    exit()
+    # exit()
 
     #TODO: THE PREFIX SUM SEEMS TO BE WORKING, THE BOIDS ARE ORDERED IN buffer_boid_tmp, but the simulation is totally broken
 

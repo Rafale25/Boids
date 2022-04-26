@@ -28,7 +28,7 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = True
+    vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
 
     # log_level = logging.ERROR
@@ -42,10 +42,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**20#self.local_size_x * 150
-        self.map_size = 10
+        self.map_size = 100
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 512#2**16 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**16 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
