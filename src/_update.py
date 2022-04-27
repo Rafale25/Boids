@@ -1,9 +1,32 @@
 import struct
-from math import ceil, floor
-from array import array
+from math import ceil, log2
 from time import perf_counter
 
 from OpenGL import GL
+
+def parallel_prefix_scan(self):
+    n = self.total_grid_cell_count
+    self.program['PREFIX_SUM']['SIZE'] = n
+
+    group_x = ceil(float(n) / 512) ## number of threads to run
+
+    c = 1
+    for i in range(int(log2(n))):
+
+        if c:
+            self.buffer_cell_count.bind_to_storage_buffer(0)
+            self.buffer_cell_count_tmp.bind_to_storage_buffer(1)
+        else:
+            self.buffer_cell_count.bind_to_storage_buffer(1)
+            self.buffer_cell_count_tmp.bind_to_storage_buffer(0)
+
+        self.program['PREFIX_SUM']['n'] = 2**i
+
+        self.program['PREFIX_SUM'].run(group_x)
+
+        GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+
+        c = 1 - c
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
@@ -40,7 +63,7 @@ def update(self, time_since_start, frametime):
     self.program['UPDATE_BOID_CELL_INDEX']['total_grid_cell_count'] = self.total_grid_cell_count
     self.program['UPDATE_BOID_CELL_INDEX']['map_size'] = self.map_size
 
-    self.program['PREFIX_SUM']['boid_count'] = self.boid_count
+    # self.program['PREFIX_SUM']['boid_count'] = self.boid_count
 
     self.program['ATOMIC_INCREMENT_CELL_COUNT']['boid_count'] = self.boid_count
 
@@ -52,6 +75,7 @@ def update(self, time_since_start, frametime):
     self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     with self.query:
@@ -59,6 +83,7 @@ def update(self, time_since_start, frametime):
     self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
 
     # self.ctx.finish()
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count.bind_to_storage_buffer(1)
@@ -68,12 +93,14 @@ def update(self, time_since_start, frametime):
 
     # self.ctx.finish()
 
-    self.buffer_cell_count.bind_to_storage_buffer(0)
-    with self.query:
-        self.program['PREFIX_SUM'].run(x)
-    self.debug_values['PREFIX_SUM'] = self.query.elapsed * 10e-7
+    # self.buffer_cell_count.bind_to_storage_buffer(0)
+    # with self.query:
+    #     self.program['PREFIX_SUM'].run(x)
+    # self.debug_values['PREFIX_SUM'] = self.query.elapsed * 10e-7
+    self.parallel_prefix_scan()
 
     # self.ctx.finish()
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
@@ -82,8 +109,9 @@ def update(self, time_since_start, frametime):
         self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
     self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
 
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
-    #
+
     # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
     # data = struct.iter_unpack('fffIffff', data)
     # data = [v for v in data]
@@ -107,114 +135,7 @@ def update(self, time_since_start, frametime):
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count.bind_to_storage_buffer(2)
-    # self.buffer_cell_start.bind_to_storage_buffer(2)
 
     with self.query:
         self.program[self.map_type].run(x, 1, 1)
     self.debug_values['boids compute'] = self.query.elapsed * 10e-7
-
-
-# self.program['SPATIAL_HASH_1']['cell_spacing'] = self.cell_spacing
-# self.program['SPATIAL_HASH_1']['boid_count'] = self.boid_count
-# self.program['SPATIAL_HASH_1']['total_grid_cell_count'] = self.total_grid_cell_count
-# self.program['SPATIAL_HASH_1']['map_size'] = self.map_size
-#
-# self.program['SET_BOIDS_BY_INDEX_LIST']['boid_count'] = self.boid_count
-# self.program['SET_CELL_START']['boid_count'] = self.boid_count
-
-# self.buffer_boid.bind_to_storage_buffer(0)
-# self.buffer_indices.bind_to_storage_buffer(1)
-# with self.query:
-#     self.program['SPATIAL_HASH_1'].run(x)
-# self.debug_values['spatial hash 1'] = self.query.elapsed * 10e-7
-
-
-# GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
-# self.ctx.finish() # wait for compute shader to finish
-
-# self.buffer_indices.bind_to_storage_buffer(0)
-# t1 = perf_counter()
-# self.sort(program=self.program['BITONIC_MERGE_SORT'], n=self.boid_count)
-# self.ctx.finish() # wait for compute shader to finish
-# t2 = perf_counter()
-# self.debug_values['bitonic merge sort'] = (t2 - t1) * 1000
-# print(f"Took {t:.3f}ms to sort {self.boid_count} elements\n")
-
-
-## choose next boid buffer as 1
-# self.buffer_boid.bind_to_storage_buffer(0)
-# self.buffer_boid_tmp.bind_to_storage_buffer(1)
-# self.buffer_indices.bind_to_storage_buffer(2)
-# with self.query:
-#     self.program['SET_BOIDS_BY_INDEX_LIST'].run(x)
-# self.debug_values['set boid at index from indices buffer'] = self.query.elapsed * 10e-7
-
-
-
-# self.buffer_indices.bind_to_storage_buffer(0)
-# self.buffer_cell_start.bind_to_storage_buffer(1)
-# with self.query:
-#     self.program['SET_CELL_START'].run(x)
-# self.debug_values['spatial hash 2'] = self.query.elapsed * 10e-7
-
-# self.ctx.finish()
-
-"""
-Boid algorithm pseudo code
-
-Boid {
-    vec3 pos;
-    uint cell_index;
-    vec3 dir;
-    uint padding; // unused
-}
-
-Pair {
-    uint boid_index;
-    uint cell_index;
-}
-
-buffer_boid : [Boid]
-buffer_boid_tmp : [Boid]
-buffer_cell_start : [uint] buffer_pairs : [Pair]
-
-
-## update loop
-
-bind (buffer_boid, 0)
-bind (buffer_pairs, 1)
-dispatchCall() -> {
-    index = gl_GlobalInvocationID.x
-    cell_index = compute boid cell_index
-
-    boid.cell_index = cell_index
-
-    pair.boid_index = index
-    pair.cell_index = cell_index
-}
-
-bind (buffer_pairs, 0)
-dispatchCall() -> {
-    sort buffer_pairs by cell_index
-}
-
-bind (buffer_boid, 0)
-bind (buffer_boid_tmp, 1)
-bind (buffer_pairs, 2)
-dispatchCall() -> {
-    use buffer_pairs to set boids from buffer_boid to their sorted place in buffer_boid_tmp
-}  
-
-bind (buffer_boid_tmp, 0)
-bind (buffer_cell_start, 1)
-dispatchCall() -> {
-    find and set cell_start in buffer_cell_start by using boid.cell_start
-}
-
-bind (buffer_boid_tmp, 0)
-bind (buffer_boid, 1)
-bind (buffer_cell_start, 2)
-dispatchCall() -> {
-    boids computation
-}
-"""

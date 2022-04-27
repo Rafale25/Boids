@@ -1,24 +1,28 @@
 #version 430 core
 
-#define LOCAL_SIZE_X 0
+layout(local_size_x=512, local_size_y=1, local_size_z=1) in;
 
-layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
-
-layout(std430, binding=0) buffer buffer_cell_count {
-    uint cell_count[];
+layout(std430, binding=0) readonly buffer buffer_1
+{
+    uint buffer1[];
 };
 
-uniform uint boid_count;
+layout(std430, binding=1) writeonly buffer buffer_2
+{
+    uint buffer2[];
+};
+
+uniform uint SIZE;
+uniform uint n; // number of neighbors away
 
 void main() {
     const uint index = gl_GlobalInvocationID.x;
 
-    if (index >= boid_count)
-        return;
+    if (index >= SIZE) return;
 
-    if (index == 0) {
-        for (int i = 1 ; i < boid_count ; ++i) { // change by total_grid_cell_count
-            cell_count[i] += cell_count[i - 1];
-        }
+    if (index - n < 0) {
+        buffer2[index] = buffer1[index];
+    } else {
+        buffer2[index] = buffer1[index] + buffer1[index - n];
     }
 }

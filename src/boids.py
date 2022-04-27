@@ -3,9 +3,6 @@
 from math import pi, cos, sin, ceil
 from random import uniform
 from array import array
-# import numpy
-# import time
-# import struct
 import logging
 
 import moderngl
@@ -42,10 +39,10 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**20#self.local_size_x * 150
-        self.map_size = 100
+        self.map_size = 140
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**16 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**22 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -115,25 +112,6 @@ class MyWindow(moderngl_window.WindowConfig):
                     path='./shaders/boids/compute/atomic_increment_cell_count.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
-            # 'RESET_INDICES':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/compute/reset_indices.comp',
-            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
-            # 'SPATIAL_HASH_1':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/compute/boid_spatialHash_1.comp',
-            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
-            # 'SET_CELL_START':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/compute/set_cell_start.comp',
-            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
-            # 'BITONIC_MERGE_SORT':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/compute/bitonic_merge_sort.comp'),
-            # 'SET_BOIDS_BY_INDEX_LIST':
-            #     self.load_compute_shader(
-            #         path='./shaders/boids/compute/boid_set_at_indice.comp',
-            #         defines={'LOCAL_SIZE_X': self.local_size_x}),
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -166,13 +144,12 @@ class MyWindow(moderngl_window.WindowConfig):
         self.buffer_boid = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
         self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
         self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_boid into buffer_boid_tmp
-        # self.buffer_indices = self.ctx.buffer(reserve=2*4*self.boid_count)
 
         self.cell_spacing = 1.0
         self.total_grid_cell_count = self.boid_count
-        # self.buffer_cell_start = self.ctx.buffer(reserve=4*self.total_grid_cell_count, dynamic=True)
 
         self.buffer_cell_count = self.ctx.buffer(reserve=4*self.total_grid_cell_count)
+        self.buffer_cell_count_tmp = self.ctx.buffer(reserve=self.buffer_cell_count.size)
 
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
@@ -288,7 +265,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update
+    from _update import update, parallel_prefix_scan
 
     from _sort import sort
 
