@@ -22,7 +22,10 @@ def parallel_prefix_scan(self):
 
         self.program['PREFIX_SUM']['n'] = 2**i
 
+        # with self.query:
         self.program['PREFIX_SUM'].run(group_x)
+        # self.debug_values[f'PREFIX SUM {i}'] = self.query.elapsed * 10e-7
+
 
         GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
@@ -74,7 +77,6 @@ def update(self, time_since_start, frametime):
         self.program['RESET_CELLS'].run(x)
     self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
-    # self.ctx.finish()
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
@@ -82,7 +84,6 @@ def update(self, time_since_start, frametime):
         self.program['UPDATE_BOID_CELL_INDEX'].run(x)
     self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
 
-    # self.ctx.finish()
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
@@ -91,16 +92,15 @@ def update(self, time_since_start, frametime):
         self.program['INCREMENT_CELL_COUNTER'].run(x)
     self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
 
-    # self.ctx.finish()
-
-    # self.buffer_cell_count.bind_to_storage_buffer(0)
-    # with self.query:
-    #     self.program['PREFIX_SUM'].run(x)
-    # self.debug_values['PREFIX_SUM'] = self.query.elapsed * 10e-7
-    self.parallel_prefix_scan()
-
-    # self.ctx.finish()
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+
+    t1 = perf_counter()
+    self.parallel_prefix_scan()
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    # self.ctx.finish()
+    t2 = perf_counter()
+    self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
+
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
