@@ -24,7 +24,7 @@ def gui_newFrame(self):
         min_value=10,
         max_value=150)
 
-    imgui.text("Boid Count: {} ms".format(self.boid_count))
+    imgui.text("Boid Count: {}".format(self.boid_count))
     # changed, new_boid_count = imgui.drag_int(
     #     label="Boid Count",
     #     value=self.boid_count,
