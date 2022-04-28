@@ -3,7 +3,7 @@
 from math import pi, cos, sin, ceil
 from random import uniform
 from array import array
-import logging
+# import logging
 
 import moderngl
 import imgui
@@ -38,11 +38,11 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
-        self.max_boids = 2**20#self.local_size_x * 150
+        self.max_boids = 2**22#self.local_size_x * 150
         self.map_size = 150
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**22 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**21 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -68,7 +68,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.fps_counter = FpsCounter()
         self.debug_values = {}
         self.query = self.ctx.query(samples=False, time=True)
-
+        self.query_enabled = True
 
         ## ImGui --
         imgui.create_context()
@@ -265,7 +265,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update, parallel_prefix_scan
+    from _update import update, parallel_prefix_scan, program_run
 
     from _sort import sort
 

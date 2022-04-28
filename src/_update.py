@@ -4,6 +4,15 @@ from time import perf_counter
 
 from OpenGL import GL
 
+def program_run(self, program, x=0, y=1, z=1, debug=None):
+    if self.query_enabled:
+        with self.query:
+            program.run(x, y, z)
+        self.debug_values[debug] = self.query.elapsed * 10e-7
+    else:
+        program.run(x, y, z)
+        self.debug_values[debug] = 0
+
 def parallel_prefix_scan(self):
     n = self.total_grid_cell_count
     self.program['PREFIX_SUM']['SIZE'] = n
@@ -11,8 +20,8 @@ def parallel_prefix_scan(self):
     group_x = ceil(float(n) / 512) ## number of threads to run
 
     c = 1
-    for i in range(int(log2(n))):
-
+    iteration_count = int(log2(n))
+    for i in range(iteration_count):
         if c:
             self.buffer_cell_count.bind_to_storage_buffer(0)
             self.buffer_cell_count_tmp.bind_to_storage_buffer(1)
@@ -26,10 +35,13 @@ def parallel_prefix_scan(self):
         self.program['PREFIX_SUM'].run(group_x)
         # self.debug_values[f'PREFIX SUM {i}'] = self.query.elapsed * 10e-7
 
-
         GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
         c = 1 - c
+
+    # if the number of iterations is odd, swap buffers to get the final one
+    if iteration_count % 2 == 1:
+        self.buffer_cell_count, self.buffer_cell_count_tmp = self.buffer_cell_count_tmp, self.buffer_cell_count
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
@@ -73,41 +85,42 @@ def update(self, time_since_start, frametime):
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
     self.buffer_cell_count.bind_to_storage_buffer(0)
-    with self.query:
-        self.program['RESET_CELLS'].run(x)
-    self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
+    # with self.query:
+    self.program['RESET_CELLS'].run(x)
+    # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
-    with self.query:
-        self.program['UPDATE_BOID_CELL_INDEX'].run(x)
-    self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
+    # with self.query:
+    self.program['UPDATE_BOID_CELL_INDEX'].run(x)
+    # self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
+    # self.program_run(self.program['UPDATE_BOID_CELL_INDEX'], x=x, debug='UPDATE_BOID_CELL_INDEX')
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count.bind_to_storage_buffer(1)
-    with self.query:
-        self.program['INCREMENT_CELL_COUNTER'].run(x)
-    self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
+    # with self.query:
+    self.program['INCREMENT_CELL_COUNTER'].run(x)
+    # self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
-    t1 = perf_counter()
+    # t1 = perf_counter()
     self.parallel_prefix_scan()
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
-    t2 = perf_counter()
-    self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
+    # t2 = perf_counter()
+    # self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
 
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
     self.buffer_cell_count.bind_to_storage_buffer(2)
-    with self.query:
-        self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
-    self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
+    # with self.query:
+    self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
+    # self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
@@ -136,6 +149,6 @@ def update(self, time_since_start, frametime):
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count.bind_to_storage_buffer(2)
 
-    with self.query:
-        self.program[self.map_type].run(x, 1, 1)
-    self.debug_values['boids compute'] = self.query.elapsed * 10e-7
+    # with self.query:
+    self.program[self.map_type].run(x, 1, 1)
+    # self.debug_values['boids compute'] = self.query.elapsed * 10e-7

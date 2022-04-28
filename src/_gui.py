@@ -13,6 +13,9 @@ def gui_newFrame(self):
     changed, self.pause = imgui.checkbox("Paused", self.pause)
     imgui.new_line()
 
+    changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
+    imgui.new_line()
+
     changed, self.map_type = imgui.combo(
         "Map Type", self.map_type, ["CubeT", "Cube", "Sphere", "SphereT"]
     )
