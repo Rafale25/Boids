@@ -20,9 +20,9 @@ def gui_newFrame(self):
     changed, self.map_size = imgui.drag_int(
         label="Map Size",
         value=self.map_size,
-        change_speed=0.1,
+        change_speed=1,
         min_value=10,
-        max_value=100)
+        max_value=150)
 
     imgui.text("Boid Count: {} ms".format(self.boid_count))
     # changed, new_boid_count = imgui.drag_int(

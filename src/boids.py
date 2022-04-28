@@ -39,7 +39,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = self.local_size_x
         self.max_boids = 2**20#self.local_size_x * 150
-        self.map_size = 140
+        self.map_size = 150
         self.map_type = MapType.MAP_CUBE
 
         self.boid_count = 2**22 ## must be a power of 2 or it the sort will not work
@@ -250,7 +250,7 @@ class MyWindow(moderngl_window.WindowConfig):
             yield uniform(-self.map_size/2, self.map_size/2)  # x
             yield uniform(-self.map_size/2, self.map_size/2)  # y
             yield uniform(-self.map_size/2, self.map_size/2)  # z
-            yield 0 # "fuck that shit" actually its cell_id now
+            yield 0 # "fuck that shit" actually its cell_index now
 
             dir = random_uniform_vec3()
             yield dir[0]  # fx
