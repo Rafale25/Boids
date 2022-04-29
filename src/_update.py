@@ -4,14 +4,14 @@ from time import perf_counter
 
 from OpenGL import GL
 
-def program_run(self, program, x=0, y=1, z=1, debug=None):
-    if self.query_enabled:
-        with self.query:
-            program.run(x, y, z)
-        self.debug_values[debug] = self.query.elapsed * 10e-7
-    else:
-        program.run(x, y, z)
-        self.debug_values[debug] = 0
+# def program_run(self, program, x=0, y=1, z=1, debug=None):
+#     if self.query_enabled:
+#         with self.query:
+#             program.run(x, y, z)
+#         self.debug_values[debug] = self.query.elapsed * 10e-7
+#     else:
+#         program.run(x, y, z)
+#         self.debug_values[debug] = 0
 
 def parallel_prefix_scan(self):
     n = self.total_grid_cell_count

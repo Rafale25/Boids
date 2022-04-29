@@ -265,7 +265,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update, parallel_prefix_scan, program_run
+    from _update import update, parallel_prefix_scan
 
     from _sort import sort
 
