@@ -38,10 +38,15 @@ uniform float cohesion_force;
 uniform float cell_spacing;
 uniform uint total_grid_cell_count;
 
-float distSquared(vec3 A, vec3 B) {
-    const vec3 C = A - B;
-    return dot(C, C);
-}
+// float distSquared(vec3 A, vec3 B) {
+//     const vec3 C = A - B;
+//     return dot(C, C);
+// }
+
+// bool isPointInFieldOfView(vec3 pos, vec3 dir, vec3 point, float angle) {
+//     const float r = dot((point - pos)/length(point - pos), dir/length(dir));
+//     return length(acos(r)) <= angle;
+// }
 
 #include shaders/boids/cell_xyz.glsl
 #include shaders/boids/hash.glsl
@@ -73,6 +78,7 @@ void main() {
         const vec3 cellWorldPos = (vec3(x, y, z) + 0.5) * cell_spacing;
         const float r = dot((cellWorldPos - ourPos)/length(cellWorldPos - ourPos), ourDir/length(ourDir));
         if (length(acos(r)) <= view_angle) {
+        // if (isPointInFieldOfView(ourPos, ourDir, cellWorldPos, view_angle)) {
 
             const uint cell_index = hash(ivec3(x, y, z));
             // const uint cell_index = hash(cell_xyz(vec3(x, y, z)));
@@ -87,7 +93,8 @@ void main() {
                 const float sqrDist = dot(offset, offset);
                 if (sqrDist < view_distance * view_distance) {
 
-                    const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir)); // vision max angle ? can't remember
+                    // length definitly has an impact on performances
+                    const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir));
                     if (length(acos(r)) <= view_angle) {
                         nb_flockmates += 1;
                         averageDirection += theirDir;

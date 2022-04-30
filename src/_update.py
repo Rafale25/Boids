@@ -76,7 +76,7 @@ def update(self, time_since_start, frametime):
     self.program['UPDATE_BOID_CELL_INDEX']['boid_count'] = self.boid_count
     self.program['UPDATE_BOID_CELL_INDEX']['cell_spacing'] = self.cell_spacing
     self.program['UPDATE_BOID_CELL_INDEX']['total_grid_cell_count'] = self.total_grid_cell_count
-    # self.program['UPDATE_BOID_CELL_INDEX']['map_size'] = self.map_size
+    self.program['UPDATE_BOID_CELL_INDEX']['map_size'] = self.map_size
 
     self.program['ATOMIC_INCREMENT_CELL_COUNT']['boid_count'] = self.boid_count
 

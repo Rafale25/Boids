@@ -1,7 +1,7 @@
 
 // TODO: there's a bug with the MAX_SIZE or cell_spacing
 uint hash(ivec3 cell_index) {
-    const uint MAX_SIZE = 50;//uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
+    const uint MAX_SIZE = uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;
