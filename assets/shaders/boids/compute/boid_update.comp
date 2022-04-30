@@ -67,8 +67,8 @@ void main() {
     vec3 totalForce = vec3(0.0, 0.0, 0.0);
 
 
-    const ivec3 low = cell_xyz(ourPos - view_distance);
-    const ivec3 high = cell_xyz(ourPos + view_distance);
+    const ivec3 low = cell_xyz(ourPos - view_distance, cell_spacing);
+    const ivec3 high = cell_xyz(ourPos + view_distance, cell_spacing);
 
     // cull cells out of field of view
     for (int z = low.z; z <= high.z; ++z) {

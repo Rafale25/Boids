@@ -24,7 +24,7 @@ void main() {
     if (index >= boid_count)
         return;
 
-    ivec3 cell_xyz = cell_xyz(boids[index].pos.xyz);
+    ivec3 cell_xyz = cell_xyz(boids[index].pos.xyz, cell_spacing);
     uint cell_index = hash(cell_xyz);
 
     boids[index].cell_index = cell_index;
