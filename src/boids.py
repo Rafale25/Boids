@@ -42,7 +42,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = 150
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**21 ## must be a power of 2 or it the sort will not work
+        self.boid_count = 2**20 ## must be a power of 2 or it the sort will not work
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
@@ -145,7 +145,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
         self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_boid into buffer_boid_tmp
 
-        self.cell_spacing = 1.0
+        self.cell_spacing = self.view_distance
         self.total_grid_cell_count = self.boid_count
 
         self.buffer_cell_count = self.ctx.buffer(reserve=4*self.total_grid_cell_count)

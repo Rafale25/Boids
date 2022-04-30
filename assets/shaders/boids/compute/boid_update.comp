@@ -21,7 +21,7 @@ layout(std430, binding=1) writeonly restrict buffer boids_out {
     Boid boids[];
 } Out_boids;
 
-layout(std430, binding=2) readonly buffer buffer_3 {
+layout(std430, binding=2) readonly buffer buffer_cell_start {
     uint cell_start[];
 };
 
@@ -70,14 +70,14 @@ void main() {
     for (int y = low.y; y <= high.y; ++y) {
     for (int x = low.x; x <= high.x; ++x) {
 
-        vec3 cellPos = vec3(x, y, z) + 0.5;
-
-        float r = dot((cellPos - ourPos)/length(cellPos - ourPos), ourDir/length(ourDir));
+        const vec3 cellWorldPos = (vec3(x, y, z) + 0.5) * cell_spacing;
+        const float r = dot((cellWorldPos - ourPos)/length(cellWorldPos - ourPos), ourDir/length(ourDir));
         if (length(acos(r)) <= view_angle) {
 
-            const uint hash_index = hash(ivec3(x, y, z));
+            const uint cell_index = hash(ivec3(x, y, z));
+            // const uint cell_index = hash(cell_xyz(vec3(x, y, z)));
             // TODO: read In_boids.boids[j] since all the data is in the boid buffer now // tried one time without much success
-            for (uint j = cell_start[hash_index] ; In_boids.boids[j].cell_index == hash_index && j < boid_count ; ++j) {
+            for (uint j = cell_start[cell_index] ; In_boids.boids[j].cell_index == cell_index && j < boid_count ; ++j) {
                 if (id == j) continue; // don't check if itself
 
                 const vec3 theirPos = In_boids.boids[j].pos.xyz;
@@ -87,15 +87,15 @@ void main() {
                 const float sqrDist = dot(offset, offset);
                 if (sqrDist < view_distance * view_distance) {
 
-                    // const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir)); // vision max angle ? can't remember
-                    // if (length(acos(r)) <= view_angle) {
-                    nb_flockmates += 1;
-                    averageDirection += theirDir;
-                    averagePosition += theirPos;
+                    const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir)); // vision max angle ? can't remember
+                    if (length(acos(r)) <= view_angle) {
+                        nb_flockmates += 1;
+                        averageDirection += theirDir;
+                        averagePosition += theirPos;
 
-                    // separation
-                    totalForce += offset / sqrDist;
-                    // }
+                        // separation
+                        totalForce += offset / sqrDist;
+                    }
                 }
             }
         }
