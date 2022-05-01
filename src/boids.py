@@ -27,7 +27,6 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
-
     # log_level = logging.ERROR
 
     def __init__(self, **kwargs):
