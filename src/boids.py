@@ -35,8 +35,6 @@ class MyWindow(moderngl_window.WindowConfig):
         super().__init__(**kwargs)
         # self.ctx.gc_mode = "auto"
 
-        # print(type(self.argv.BOID_COUNT), self.argv.BOID_COUNT)
-
         # self.wnd.vsync = True
         # self.wnd._window.set_vsync(True)
 
