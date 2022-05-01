@@ -13,6 +13,8 @@ layout(std430, binding=0) restrict readonly buffer buffer_boids {
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_viewMatrix;
 
+uniform float u_boidSize = 0.12;
+
 out vec3 f_color;
 
 void main() {
@@ -27,7 +29,7 @@ void main() {
     const float pitch = abs(atan(sqrt(forward.x*forward.x + forward.z*forward.z), forward.y)) - 3.141592/2;
 
     const float pi3 = ((2.0 * PI) / 3.0);
-    const float radius = 1.2 * 0.1;
+    const float radius = u_boidSize;
 
     const mat4 mvp = u_projectionMatrix * u_viewMatrix;
     const mat4 rotation_translation_mat = calcTranslateMat4(position) * (calcRotateMat4Y(yaw) * calcRotateMat4Z(pitch));

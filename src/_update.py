@@ -55,6 +55,7 @@ def update(self, time_since_start, frametime):
 
     self.cell_spacing = max(0.5, self.view_distance)
 
+    self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BORDER']['map_size'] = self.map_size
 
     self.program[self.map_type]['boid_count'] = self.boid_count

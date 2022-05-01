@@ -1,7 +1,7 @@
 // flat xyz index
 uint hash(ivec3 cell_index) {
     const uint MAX_SIZE = uint(pow(boid_count, 1.0/3.0));
-    // const uint MAX_SIZE = uint(pow(boid_count, 1.0/3.0));//uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
+    // const uint MAX_SIZE = uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;
@@ -12,7 +12,8 @@ uint hash(ivec3 cell_index) {
 /*
 // z-order curve
 uint hash(ivec3 cell_index) {
-    const int MAX_SIZE = 64;
+    // cell_index = abs(cell_index);
+    const int MAX_SIZE = 64;//int(pow(total_grid_cell_count, 1.0/3.0));
     const uint maskx = MAX_SIZE-1;
     const uint masky = MAX_SIZE-1;
     const uint maskz = MAX_SIZE-1;
