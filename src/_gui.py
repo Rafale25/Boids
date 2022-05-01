@@ -11,9 +11,13 @@ def gui_newFrame(self):
         imgui.text("{}: {:.3f} ms".format(query, value))
 
     changed, self.pause = imgui.checkbox("Paused", self.pause)
-    imgui.new_line()
 
-    changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
+    changed, vsyncState = imgui.checkbox("Vsync", self.wnd._window.vsync)
+    if changed:
+        self.wnd._window.set_vsync(vsyncState)
+
+    # changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
+
     imgui.new_line()
 
     changed, self.map_type = imgui.combo(

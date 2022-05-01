@@ -20,7 +20,7 @@ from utils import *
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
-    window_size = (2560, 1440)
+    window_size = (1920, 1080)
     fullscreen = False
     resizable = True
     vsync = False
