@@ -1,17 +1,11 @@
 from random import uniform
-from math import pi, cos, sin, log, pow, ceil
-
-# def read_file(path):
-#     data = None
-#     with open(path, 'r') as file:
-#         data = file.read()
-#     return data
+from math import pi, cos, sin, log2, pow, ceil
 
 # def fclamp(x, min_x, max_x):
 #     return (max(min(x, max_x), min_x))
 
 def next_power_of_2(x):
-    return pow(ceil(log(x)/log(2)), 2)
+    return int(pow(2, ceil(log2(x)/log2(2))))
 
 def random_uniform_vec3(): # vector from 2 angles
     yaw = uniform(-pi, pi)

@@ -36,7 +36,6 @@ uniform float alignment_force;
 uniform float cohesion_force;
 
 uniform float cell_spacing;
-uniform uint total_grid_cell_count;
 
 // float distSquared(vec3 A, vec3 B) {
 //     const vec3 C = A - B;
@@ -80,7 +79,7 @@ void main() {
         if (length(acos(r)) <= view_angle) {
         // if (isPointInFieldOfView(ourPos, ourDir, cellWorldPos, view_angle)) {
 
-            const uint cell_index = hash(ivec3(x, y, z));
+            const uint cell_index = hash(ivec3(x, y, z), boid_count);
             // const uint cell_index = hash(cell_xyz(vec3(x, y, z)));
             // TODO: read In_boids.boids[j] since all the data is in the boid buffer now // tried one time without much success
             for (uint j = cell_start[cell_index] ; In_boids.boids[j].cell_index == cell_index && j < boid_count ; ++j) {

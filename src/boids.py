@@ -1,9 +1,10 @@
 #! /usr/bin/python3
 
-from math import pi, cos, sin, ceil
-from random import uniform
+import logging
 from array import array
-# import logging
+from random import uniform
+from math import pi, cos, sin, ceil
+from pathlib import Path
 
 import moderngl
 import imgui
@@ -13,11 +14,8 @@ from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
 
-from pathlib import Path
-
-from utils import *
-
 from _mapType import MapType
+from utils import *
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -27,25 +25,35 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    # log_level = logging.ERROR
+    log_level = logging.ERROR
+
+    @classmethod
+    def add_arguments(cls, parser):
+        parser.add_argument('-BOID_COUNT', metavar='BOID_COUNT', type=int, default=1024, required=False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.ctx.gc_mode = "auto"
 
+        # print(type(self.argv.BOID_COUNT), self.argv.BOID_COUNT)
+
+        # self.wnd.vsync = True
+        # self.wnd._window.set_vsync(True)
+
         self.pause = False
 
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
-        self.min_boids = self.local_size_x
-        self.max_boids = 2**22#self.local_size_x * 150
-        self.map_size = 100
+        self.min_boids = 1
+        self.max_boids = 2**22
+        self.map_size = 50
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = 2**20 ## must be a power of 2 or it the sort will not work
+        self.boid_count = self.argv.BOID_COUNT#next_power_of_2(self.argv.BOID_COUNT)#2**16 ## must be a power of 2
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
         self.boid_size = 0.12
+        self.cell_spacing = self.view_distance
 
         self.separation_force = 1.0
         self.alignment_force = 1.0
@@ -145,11 +153,8 @@ class MyWindow(moderngl_window.WindowConfig):
         self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
         self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_boid into buffer_boid_tmp
 
-        self.cell_spacing = self.view_distance
-        self.total_grid_cell_count = self.boid_count
-
-        self.buffer_cell_count = self.ctx.buffer(reserve=4*self.total_grid_cell_count)
-        self.buffer_cell_count_tmp = self.ctx.buffer(reserve=self.buffer_cell_count.size)
+        self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size())
+        self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size)
 
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
@@ -245,6 +250,9 @@ class MyWindow(moderngl_window.WindowConfig):
         self.borders.buffer(self.ctx.buffer(vertices), '3f', ['in_position'])
         self.borders.buffer(self.ctx.buffer(color), '3f', ['in_color'])
 
+    def get_boid_buffer_size(self):
+        return next_power_of_2(self.boid_count)
+
     def gen_initial_data(self, count):
         for _ in range(count):
             yield uniform(-self.map_size/2, self.map_size/2)  # x
@@ -256,7 +264,6 @@ class MyWindow(moderngl_window.WindowConfig):
             yield dir[0]  # fx
             yield dir[1]  # fy
             yield dir[2]  # fz
-
             yield 42 # fuck that too
 
     from _resize_buffer import resize_boids_buffer
@@ -272,7 +279,24 @@ class MyWindow(moderngl_window.WindowConfig):
     from _cleanup import cleanup
 
 if __name__ == "__main__":
-    import sys
-    print(sys.argv)
-    print(moderngl_window.parse_args())
-    # MyWindow.run()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    # parser.add_argument('-N', metavar='N', type=int, required=False)
+
+    # args = moderngl_window.parse_args(parser=parser)
+    # moderngl_window.run_window_config(MyWindow, args=['-N', '1024'])
+    # print(moderngl_window.parse_args(args=""))
+    MyWindow.run()
+
+
+"""
+
+argv: -boid_count 100 000
+
+def get_buffer_size
+    return next_power_of_2(self.boid_count)
+
+
+
+"""

@@ -11,7 +11,6 @@ layout(std430, binding=0) buffer buffer_boids {
 };
 
 uniform float cell_spacing;
-uniform uint total_grid_cell_count;
 uniform uint map_size;
 uniform uint boid_count;
 
@@ -25,7 +24,7 @@ void main() {
         return;
 
     const ivec3 cell_xyz = cell_xyz(boids[index].pos.xyz, cell_spacing);
-    const uint cell_index = hash(cell_xyz);
+    const uint cell_index = hash(cell_xyz, boid_count);
 
     boids[index].cell_index = cell_index;
 }

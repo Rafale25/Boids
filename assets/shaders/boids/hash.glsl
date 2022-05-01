@@ -1,12 +1,12 @@
 // flat xyz index
-uint hash(ivec3 cell_index) {
-    const uint MAX_SIZE = uint(pow(boid_count, 1.0/3.0));
+uint hash(ivec3 cell_index, uint count) {
+    const uint MAX_SIZE = uint(pow(count, 1.0/3.0));
     // const uint MAX_SIZE = uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;
 
-    return i % total_grid_cell_count;
+    return i % count;
 }
 
 /*

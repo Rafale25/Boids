@@ -14,7 +14,7 @@ from OpenGL import GL
 #         self.debug_values[debug] = 0
 
 def parallel_prefix_scan(self):
-    n = self.total_grid_cell_count
+    n = self.get_boid_buffer_size()#self.boid_count
     self.program['PREFIX_SUM']['SIZE'] = n
 
     group_x = ceil(float(n) / 512) ## number of threads to run
@@ -23,11 +23,11 @@ def parallel_prefix_scan(self):
     iteration_count = int(log2(n))
     for i in range(iteration_count):
         if c:
-            self.buffer_cell_count.bind_to_storage_buffer(0)
-            self.buffer_cell_count_tmp.bind_to_storage_buffer(1)
+            self.buffer_cell_count_1.bind_to_storage_buffer(0)
+            self.buffer_cell_count_2.bind_to_storage_buffer(1)
         else:
-            self.buffer_cell_count.bind_to_storage_buffer(1)
-            self.buffer_cell_count_tmp.bind_to_storage_buffer(0)
+            self.buffer_cell_count_1.bind_to_storage_buffer(1)
+            self.buffer_cell_count_2.bind_to_storage_buffer(0)
 
         self.program['PREFIX_SUM']['n'] = 2**i
 
@@ -41,7 +41,7 @@ def parallel_prefix_scan(self):
 
     # if the number of iterations is odd, swap buffers to get the final one
     if iteration_count % 2 == 1:
-        self.buffer_cell_count, self.buffer_cell_count_tmp = self.buffer_cell_count_tmp, self.buffer_cell_count
+        self.buffer_cell_count_1, self.buffer_cell_count_2 = self.buffer_cell_count_2, self.buffer_cell_count_1
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
@@ -70,7 +70,6 @@ def update(self, time_since_start, frametime):
 
     self.program[self.map_type]['map_size'] = self.map_size
     self.program[self.map_type]['cell_spacing'] = self.cell_spacing
-    self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
 
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
 
@@ -80,14 +79,12 @@ def update(self, time_since_start, frametime):
 
     self.program['UPDATE_BOID_CELL_INDEX']['boid_count'] = self.boid_count
     self.program['UPDATE_BOID_CELL_INDEX']['cell_spacing'] = self.cell_spacing
-    self.program['UPDATE_BOID_CELL_INDEX']['total_grid_cell_count'] = self.total_grid_cell_count
-    # self.program['UPDATE_BOID_CELL_INDEX']['map_size'] = self.map_size
 
     self.program['ATOMIC_INCREMENT_CELL_COUNT']['boid_count'] = self.boid_count
 
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
-    self.buffer_cell_count.bind_to_storage_buffer(0)
+    self.buffer_cell_count_1.bind_to_storage_buffer(0)
     # with self.query:
     self.program['RESET_CELLS'].run(x)
     # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
@@ -103,7 +100,7 @@ def update(self, time_since_start, frametime):
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
-    self.buffer_cell_count.bind_to_storage_buffer(1)
+    self.buffer_cell_count_1.bind_to_storage_buffer(1)
     # with self.query:
     self.program['INCREMENT_CELL_COUNTER'].run(x)
     # self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
@@ -120,7 +117,7 @@ def update(self, time_since_start, frametime):
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
-    self.buffer_cell_count.bind_to_storage_buffer(2)
+    self.buffer_cell_count_1.bind_to_storage_buffer(2)
     # with self.query:
     self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
     # self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
@@ -133,9 +130,8 @@ def update(self, time_since_start, frametime):
     # data = [v for v in data]
     # for d in data:
     #     print(d)
-    # print()
 
-    # data = self.buffer_cell_count.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
+    # data = self.buffer_cell_count_1.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
     # data = struct.iter_unpack('I', data)
     # data = [v[0] for v in data]
     # print(data)
@@ -146,11 +142,9 @@ def update(self, time_since_start, frametime):
 
     # exit()
 
-    #TODO: THE PREFIX SUM SEEMS TO BE WORKING, THE BOIDS ARE ORDERED IN buffer_boid_tmp, but the simulation is totally broken
-
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
-    self.buffer_cell_count.bind_to_storage_buffer(2)
+    self.buffer_cell_count_1.bind_to_storage_buffer(2)
 
     # with self.query:
     self.program[self.map_type].run(x, 1, 1)
