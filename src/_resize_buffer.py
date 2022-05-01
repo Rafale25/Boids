@@ -1,5 +1,6 @@
 from array import array
 
+# need to be re-written
 def resize_boids_buffer(self, new_count):
     bytes1 = self.buffer_1.read()[0:new_count * 32]
     bytes2 = self.buffer_2.read()[0:new_count * 32]
