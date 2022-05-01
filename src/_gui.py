@@ -39,21 +39,23 @@ def gui_newFrame(self):
 
     imgui.new_line()
 
-    changed, self.cell_spacing = imgui.drag_float(
-        label="cell spacing",
-        value=self.cell_spacing,
-        change_speed=0.1,
-        min_value=0.5,
-        max_value=10,
-        format="%.1f")
+    imgui.text("Cell spacing: {:.2f}".format(self.cell_spacing))
 
-    changed, self.total_grid_cell_count = imgui.drag_int(
-        label="total grid cell count",
-        value=self.total_grid_cell_count,
-        min_value=4,
-        max_value=int(self.map_size**3 / self.cell_spacing))
-    if changed:
-        self.resize_boids_buffer(self.boid_count)
+    # changed, self.cell_spacing = imgui.drag_float(
+    #     label="cell spacing",
+    #     value=self.cell_spacing,
+    #     change_speed=0.1,
+    #     min_value=0.5,
+    #     max_value=6.0,
+    #     format="%.1f")
+
+    # changed, self.total_grid_cell_count = imgui.drag_int(
+    #     label="total grid cell count",
+    #     value=self.total_grid_cell_count,
+    #     min_value=4,
+    #     max_value=int(self.map_size**3 / self.cell_spacing))
+    # if changed:
+    #     self.resize_boids_buffer(self.boid_count)
 
     imgui.new_line()
 
