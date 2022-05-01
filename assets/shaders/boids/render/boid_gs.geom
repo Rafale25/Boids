@@ -12,6 +12,8 @@ out vec3 f_color;
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_viewMatrix;
 
+uniform float u_boidSize = 0.12;
+
 #include shaders/utils.glsl
 
 void main() {
@@ -21,7 +23,7 @@ void main() {
     const float pitch = abs(atan(sqrt(g_for[0].x*g_for[0].x + g_for[0].z*g_for[0].z), g_for[0].y)) - 3.141592/2;
 
     const float pi3 = ((2.0 * PI) / 3.0);
-    const float radius = 0.12;
+    const float radius = u_boidSize;
 
     const mat4 mvp = u_projectionMatrix * u_viewMatrix;
     const mat4 rotation_translation_mat = calcTranslateMat4(position) * (calcRotateMat4Y(yaw) * calcRotateMat4Z(pitch));

@@ -59,6 +59,16 @@ def gui_newFrame(self):
 
     imgui.new_line()
 
+    changed, self.boid_size = imgui.drag_float(
+        label="boid size",
+        value=self.boid_size,
+        change_speed=0.001,
+        min_value=0.05,
+        max_value=1.0,
+        format="%.2f")
+
+    print(self.boid_size)
+
     changed, self.speed = imgui.drag_float(
         label="Speed",
         value=self.speed,

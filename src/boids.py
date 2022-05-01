@@ -22,8 +22,8 @@ from _mapType import MapType
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
-    window_size = (1920, 1080)
-    fullscreen = False
+    window_size = (2560, 1440)
+    fullscreen = True
     resizable = True
     vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
@@ -46,6 +46,8 @@ class MyWindow(moderngl_window.WindowConfig):
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
+
+        self.boid_size = 0.12
 
         self.separation_force = 1.0
         self.alignment_force = 1.0

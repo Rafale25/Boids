@@ -71,6 +71,8 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['cell_spacing'] = self.cell_spacing
     self.program[self.map_type]['total_grid_cell_count'] = self.total_grid_cell_count
 
+    self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
+
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
 
     self.program['INCREMENT_CELL_COUNTER']['boid_count'] = self.boid_count
