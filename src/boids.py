@@ -23,7 +23,7 @@ class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
     window_size = (2560, 1440)
-    fullscreen = True
+    fullscreen = False
     resizable = True
     vsync = False
     resource_dir = (Path(__file__) / "../../assets").resolve()
@@ -45,7 +45,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
-
         self.boid_size = 0.12
 
         self.separation_force = 1.0
@@ -273,4 +272,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _cleanup import cleanup
 
 if __name__ == "__main__":
-    MyWindow.run()
+    import sys
+    print(sys.argv)
+    print(moderngl_window.parse_args())
+    # MyWindow.run()
