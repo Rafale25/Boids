@@ -14,10 +14,10 @@ from OpenGL import GL
 #         self.debug_values[debug] = 0
 
 def parallel_prefix_scan(self):
-    n = self.get_boid_buffer_size()#self.boid_count
-    self.program['PREFIX_SUM']['SIZE'] = n
+    group_x = ceil(float(self.boid_count) / 512) ## number of threads to run
 
-    group_x = ceil(float(n) / 512) ## number of threads to run
+    n = self.get_boid_buffer_size()
+    self.program['PREFIX_SUM']['SIZE'] = n
 
     c = 1
     iteration_count = int(log2(n))
