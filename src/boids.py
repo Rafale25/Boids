@@ -23,7 +23,7 @@ class MyWindow(moderngl_window.WindowConfig):
     window_size = (1920, 1080)
     fullscreen = False
     resizable = True
-    vsync = False
+    vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
     log_level = logging.ERROR
 
@@ -118,6 +118,15 @@ class MyWindow(moderngl_window.WindowConfig):
                     path='./shaders/boids/compute/atomic_increment_cell_count.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
+            'RESIZE':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/resize/init.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'COPY':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/resize/copy.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -153,7 +162,6 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size())
         self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size)
-
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
         # self.vbo = self.ctx.buffer(vertices)

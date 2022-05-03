@@ -50,13 +50,14 @@ def update(self, time_since_start, frametime):
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
+    self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
+    self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
+    self.program['BORDER']['map_size'] = self.map_size
+
     if self.pause:
         return
 
     self.cell_spacing = max(0.5, self.view_distance)
-
-    self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
-    self.program['BORDER']['map_size'] = self.map_size
 
     self.program[self.map_type]['boid_count'] = self.boid_count
     self.program[self.map_type]['speed'] = self.speed
@@ -70,8 +71,6 @@ def update(self, time_since_start, frametime):
 
     self.program[self.map_type]['map_size'] = self.map_size
     self.program[self.map_type]['cell_spacing'] = self.cell_spacing
-
-    self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
 
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
 
