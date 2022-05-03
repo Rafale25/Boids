@@ -9,17 +9,17 @@ uint hash(ivec3 cell_index, uint count) {
     return i % count;
 }
 
-/*
 // z-order curve
-uint hash(ivec3 cell_index) {
+/*
+uint hash(ivec3 cell_index, uint count) {
     // cell_index = abs(cell_index);
-    const int MAX_SIZE = 64;//int(pow(total_grid_cell_count, 1.0/3.0));
+    const int MAX_SIZE = 128;//int(pow(count, 1.0/3.0));//64;
     const uint maskx = MAX_SIZE-1;
     const uint masky = MAX_SIZE-1;
     const uint maskz = MAX_SIZE-1;
     const uint width = MAX_SIZE;
     const uint width_height = MAX_SIZE*MAX_SIZE;
-    return ((cell_index.x&maskx)+(cell_index.y&masky)*width+(cell_index.z&maskz)*width_height );
+    return ((cell_index.x&maskx)+(cell_index.y&masky)*width+(cell_index.z&maskz)*width_height ) % count;
 }
 */
 
