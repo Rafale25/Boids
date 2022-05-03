@@ -22,6 +22,8 @@ def resize_boids_buffer(self, new_count):
     self.program['COPY']['u_boid_count'] = new_count
     self.program['COPY'].run(x)
 
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+
     ## TODO: orphan to next power of 2, and never orphan to smaller size
     ## Note: orphan is actually very fast
     self.buffer_cell_count_1.orphan(new_count * 4)
