@@ -6,9 +6,27 @@ layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
 
 #include shaders/boids/boid_struct.glsl
 
-float rand(vec2 co){
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+uint hash(uint x) {
+    x ^= 2747636419u;
+    x *= 2654435769u;
+    x ^= x >> 16;
+    x *= 2654435769u;
+    x ^= x >> 16;
+    x *= 2654435769u;
+    return x;
 }
+
+float random_uniform(uint seed) {
+    return float(hash(seed)) / 4294967295u;
+}
+
+float map(float value, float min1, float max1, float min2, float max2) {
+    return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+
+// vec3 random_in_area(uint seed, vec3 minP, vec3 maxP) {
+//     map(random_uniform(uint(index*u_time*7.383)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
+// }
 
 layout(std430, binding=0) readonly buffer buffer_boids_old {
     Boid boids[];
@@ -18,7 +36,8 @@ layout(std430, binding=1) writeonly buffer buffer_boids_new {
     Boid boids_tmp[];
 };
 
-uniform uint map_size;
+uniform float u_time;
+uniform float map_size;
 uniform uint u_old_boid_count;
 uniform uint u_new_boid_count;
 
@@ -28,20 +47,20 @@ void main() {
     if (index >= u_new_boid_count)
         return;
 
-    if (index > u_old_boid_count) {
-        float id = float(index);
-
+    if (index >= u_old_boid_count) {
         Boid b;
+
         vec3 pos = vec3(
-            (rand(vec2(id*0.323, id*0.793)) * 2.0 - 1.0) * (map_size/2),
-            (rand(vec2(id*0.732, id*0.598)) * 2.0 - 1.0) * (map_size/2),
-            (rand(vec2(id*0.128, id*0.453)) * 2.0 - 1.0) * (map_size/2));
-        vec3 dir = vec3(
-            rand(vec2(id*0.323, id*0.923)) * 2.0 - 1.0,
-            rand(vec2(id*0.113, id*0.993)) * 2.0 - 1.0,
-            rand(vec2(id*0.513, id*0.343)) * 2.0 - 1.0
+            map(random_uniform(uint(index*u_time*7.383)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
+            map(random_uniform(uint(index*u_time*12.293)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
+            map(random_uniform(uint(index*u_time*3.877)), 0.0, 1.0, -map_size*0.5, map_size*0.5)
         );
-        dir = normalize(dir);
+
+        vec3 dir = normalize(vec3(
+            random_uniform(uint(index*u_time*2.383)) - 0.5,
+            random_uniform(uint(index*u_time*4.247)) - 0.5,
+            random_uniform(uint(index*u_time*5.917)) - 0.5
+        ));
 
         b.pos.xyz = pos;
         b.cell_index = 0;

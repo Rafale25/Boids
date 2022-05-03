@@ -1,5 +1,5 @@
-from array import array
 from math import ceil
+from OpenGL import GL
 
 def resize_boids_buffer(self, new_count):
     self.buffer_boid_tmp.orphan(new_count * 32)
@@ -13,7 +13,7 @@ def resize_boids_buffer(self, new_count):
     self.program['RESIZE']['u_new_boid_count'] = new_count
     self.program['RESIZE'].run(x)
 
-    self.ctx.finish()
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
 
     self.buffer_boid.orphan(new_count * 32)
 
@@ -21,18 +21,16 @@ def resize_boids_buffer(self, new_count):
     self.buffer_boid.bind_to_storage_buffer(1)
     self.program['COPY']['u_boid_count'] = new_count
     self.program['COPY'].run(x)
-    ## BUG: random value is too bad in compute shader
-    ## TODO: checker si 2 boids ont la même position et direction, si oui, les écarter
-
-    self.ctx.finish()
 
     ## TODO: orphan to next power of 2, and never orphan to smaller size
+    ## Note: orphan is actually very fast
     self.buffer_cell_count_1.orphan(new_count * 4)
     self.buffer_cell_count_2.orphan(new_count * 4)
 
     self.boid_count = new_count
 
 
+# from array import array
 # def resize_boids_buffer(self, new_count):
 #     read_size = min(new_count, self.boid_count)
 #     bytes1 = self.buffer_boid.read()[0:read_size * 32]

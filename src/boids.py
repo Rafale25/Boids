@@ -40,6 +40,8 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.pause = False
 
+        self.time = 0.0
+
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = 1
         self.max_boids = 2**22

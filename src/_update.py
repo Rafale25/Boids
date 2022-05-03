@@ -1,5 +1,5 @@
 import struct
-from math import ceil, log2
+from math import ceil, log2, isnan
 from time import perf_counter
 
 from OpenGL import GL
@@ -49,6 +49,8 @@ def update(self, time_since_start, frametime):
             program['u_viewMatrix'].write(self.camera.matrix)
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
+
+    self.program['RESIZE']['u_time'] = time_since_start
 
     self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
@@ -127,8 +129,12 @@ def update(self, time_since_start, frametime):
     # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
     # data = struct.iter_unpack('fffIffff', data)
     # data = [v for v in data]
+    # if any(isnan(x[0]) for x in data):
+    #     print('ISNAN')
+    #     exit()
     # for d in data:
     #     print(d)
+    # print(data)
 
     # data = self.buffer_cell_count_1.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
     # data = struct.iter_unpack('I', data)
