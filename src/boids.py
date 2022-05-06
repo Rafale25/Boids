@@ -180,7 +180,7 @@ class MyWindow(moderngl_window.WindowConfig):
             ],
         )
         ## vertex pulling
-        self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
+        # self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
 
 
         ## Compass --------------------------------------------------------

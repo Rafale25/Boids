@@ -1,5 +1,6 @@
 import struct
-from math import ceil, log2, isnan
+import glm
+from math import ceil, log2
 from time import perf_counter
 
 from OpenGL import GL
@@ -44,6 +45,11 @@ def parallel_prefix_scan(self):
         self.buffer_cell_count_1, self.buffer_cell_count_2 = self.buffer_cell_count_2, self.buffer_cell_count_1
 
 def update(self, time_since_start, frametime):
+    # cameraMatrix = glm.mat4(1.0)
+    # boid = self.buffer_boid.read(size=32)
+    # boid = struct.unpack('fffIffff', boid)
+    # print(boid)
+
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
             program['u_viewMatrix'].write(self.camera.matrix)
