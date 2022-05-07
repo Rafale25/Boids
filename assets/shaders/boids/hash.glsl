@@ -9,6 +9,23 @@ uint hash(ivec3 cell_index, uint count) {
     return i % count;
 }
 
+// uint hash(ivec3 cell_index, uint count) {
+//     const uint MAX_SIZE = uint(pow(count, 1.0/3.0));
+//     const uint MAX_SIZE3 = MAX_SIZE / 3;
+//
+//     uint big_i =
+//             (cell_index.z * MAX_SIZE3*MAX_SIZE3) +
+//             (cell_index.y * MAX_SIZE3) +
+//             cell_index.x;
+//
+//     uint small_i =
+//         (cell_index.x % (MAX_SIZE*MAX_SIZE) ) +
+//         (cell_index.y % MAX_SIZE) +
+//         (cell_index.x % 3);
+//
+//     return (big_i + small_i) % count;
+// }
+
 // uint expandBits(uint v)
 // {
 //     v = (v * 0x00010001u) & 0xFF0000FFu;
@@ -18,7 +35,8 @@ uint hash(ivec3 cell_index, uint count) {
 //     return v;
 // }
 //
-// uint hash(ivec3 cell_index, uint count)
+//
+// uint hash(ivec3 cell_index, uint count) // z-order curve
 // {
 //     const int MAX_SIZE = 161;//int(pow(count, 1.0/3.0));
 //     cell_index.x %= MAX_SIZE;
@@ -33,7 +51,7 @@ uint hash(ivec3 cell_index, uint count) {
 //     return (xx * 4 + yy * 2 + zz) % count;
 // }
 
-// z-order curve
+// z-order curve (not working)
 /*
 uint hash(ivec3 cell_index, uint count) {
     // cell_index = abs(cell_index);

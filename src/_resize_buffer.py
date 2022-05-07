@@ -1,7 +1,7 @@
 from math import ceil
 from OpenGL import GL
 
-def resize_boids_buffer(self, new_count):
+def resize_boids_buffer(self, old_count, new_count):
     self.buffer_boid_tmp.orphan(new_count * 32)
 
     x = ceil(float(new_count) / self.local_size_x)
@@ -9,7 +9,7 @@ def resize_boids_buffer(self, new_count):
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
     self.program['RESIZE']['map_size'] = self.map_size
-    self.program['RESIZE']['u_old_boid_count'] = self.boid_count
+    self.program['RESIZE']['u_old_boid_count'] = old_count
     self.program['RESIZE']['u_new_boid_count'] = new_count
     self.program['RESIZE'].run(x)
 

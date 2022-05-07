@@ -1,5 +1,5 @@
 import struct
-from math import ceil, log2, isnan
+from math import ceil, log2, isnan, fmod
 from time import perf_counter
 
 from OpenGL import GL
@@ -50,7 +50,7 @@ def update(self, time_since_start, frametime):
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
-    self.program['RESIZE']['u_time'] = time_since_start
+    self.program['RESIZE']['u_time'] = fmod(time_since_start, 1.0) ## need modulo or risk of losing float precision
 
     self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
