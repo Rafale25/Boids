@@ -30,6 +30,7 @@ class MyWindow(moderngl_window.WindowConfig):
     @classmethod
     def add_arguments(cls, parser):
         parser.add_argument('-BOID_COUNT', metavar='BOID_COUNT', type=int, default=1024, required=False)
+        parser.add_argument('-MAP_SIZE', metavar='MAP_SIZE', type=int, default=20, required=False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -40,7 +41,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = 1
         self.max_boids = 2**22
-        self.map_size = 50
+        self.map_size = self.argv.MAP_SIZE
         self.map_type = MapType.MAP_CUBE
 
         self.boid_count = self.argv.BOID_COUNT#next_power_of_2(self.argv.BOID_COUNT)#2**16 ## must be a power of 2
