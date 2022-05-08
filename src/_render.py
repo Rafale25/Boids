@@ -19,7 +19,7 @@ def render(self, time_since_start, frametime):
     self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
     # self.debug_values['boids render'] = self.query.elapsed * 10e-7
 
-    if (self.map_type == MapType.MAP_CUBE or self.map_type == MapType.MAP_CUBE_T):
+    if self.map_type in (MapType.MAP_CUBE, MapType.MAP_CUBE_T):
         self.borders.render(program=self.program['BORDER'])
 
     self.ctx.wireframe = False
