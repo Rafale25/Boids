@@ -1,7 +1,6 @@
 // flat xyz index
 uint hash(ivec3 cell_index, uint count) {
-    const uint MAX_SIZE = uint(pow(count, 1.0/3.0));
-    // const uint MAX_SIZE = uint(map_size / cell_spacing); // MAX_SIZE should be the size describe by the lowest to highest boid position
+    const uint MAX_SIZE = uint(pow(count, 1.0/3.0)); // cube root of the amount of boids
     uint i = (cell_index.z * MAX_SIZE*MAX_SIZE) +
             (cell_index.y * MAX_SIZE) +
             cell_index.x;
