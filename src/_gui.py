@@ -12,9 +12,13 @@ def gui_newFrame(self):
 
     changed, self.pause = imgui.checkbox("Paused", self.pause)
 
-    changed, vsyncState = imgui.checkbox("Vsync", self.wnd._window.vsync)
+    changed, state = imgui.checkbox("Fullscreen", self.wnd.fullscreen)
     if changed:
-        self.wnd._window.set_vsync(vsyncState)
+        self.wnd.fullscreen = state
+
+    changed, state = imgui.checkbox("Vsync", self.wnd._window.vsync)
+    if changed:
+        self.wnd._window.set_vsync(state)
 
     # changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
 
@@ -40,7 +44,7 @@ def gui_newFrame(self):
         min_value=self.min_boids,
         max_value=self.max_boids)
     if changed:
-        self.resize_boids_buffer(new_boid_count)
+        self.resize_boids_buffer(old_count=self.boid_count, new_count=new_boid_count)
 
     imgui.new_line()
 

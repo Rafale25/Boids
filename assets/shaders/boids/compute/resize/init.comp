@@ -52,7 +52,7 @@ void main() {
 
         vec3 pos = vec3(
             map(random_uniform(uint(index*u_time*7.383)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
-            map(random_uniform(uint(index*u_time*12.293)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
+            map(random_uniform(uint(index*u_time*1.293)), 0.0, 1.0, -map_size*0.5, map_size*0.5),
             map(random_uniform(uint(index*u_time*3.877)), 0.0, 1.0, -map_size*0.5, map_size*0.5)
         );
 

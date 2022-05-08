@@ -30,22 +30,18 @@ class MyWindow(moderngl_window.WindowConfig):
     @classmethod
     def add_arguments(cls, parser):
         parser.add_argument('-BOID_COUNT', metavar='BOID_COUNT', type=int, default=1024, required=False)
+        parser.add_argument('-MAP_SIZE', metavar='MAP_SIZE', type=int, default=20, required=False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.ctx.gc_mode = "auto"
 
-        # self.wnd.vsync = True
-        # self.wnd._window.set_vsync(True)
-
         self.pause = False
-
-        self.time = 0.0
 
         self.local_size_x = 512 ## smaller value is better when boids are close to each others, and bigger when they are far appart
         self.min_boids = 1
         self.max_boids = 2**22
-        self.map_size = 50
+        self.map_size = self.argv.MAP_SIZE
         self.map_type = MapType.MAP_CUBE
 
         self.boid_count = self.argv.BOID_COUNT#next_power_of_2(self.argv.BOID_COUNT)#2**16 ## must be a power of 2
@@ -158,12 +154,15 @@ class MyWindow(moderngl_window.WindowConfig):
         }
 
         ## Boids --------------------------------------------------------
-        self.buffer_boid = self.ctx.buffer(data=array('f', self.gen_initial_data(self.boid_count)))
-        self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size)
-        self.ctx.copy_buffer(dst=self.buffer_boid_tmp, src=self.buffer_boid) ##copy buffer_boid into buffer_boid_tmp
+        self.buffer_boid = self.ctx.buffer(reserve=32*self.boid_count, dynamic=True)
+        self.buffer_boid_tmp = self.ctx.buffer(reserve=self.buffer_boid.size, dynamic=True)
 
-        self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size())
-        self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size)
+        self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size(), dynamic=True)
+        self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size, dynamic=True)
+
+        ## init the boid buffer
+        self.program['RESIZE']['u_time'] = 1.0
+        self.resize_boids_buffer(old_count=0, new_count=self.boid_count)
 
         # can't do that yet because x4/i not supported by moderngl-window==2.4.0
         # self.vbo = self.ctx.buffer(vertices)
@@ -261,19 +260,6 @@ class MyWindow(moderngl_window.WindowConfig):
     def get_boid_buffer_size(self):
         return next_power_of_2(self.boid_count)
 
-    def gen_initial_data(self, count):
-        for _ in range(count):
-            yield uniform(-self.map_size/2, self.map_size/2)  # x
-            yield uniform(-self.map_size/2, self.map_size/2)  # y
-            yield uniform(-self.map_size/2, self.map_size/2)  # z
-            yield 0 # "fuck that shit" actually its cell_index now
-
-            dir = random_uniform_vec3()
-            yield dir[0]  # fx
-            yield dir[1]  # fy
-            yield dir[2]  # fz
-            yield 42 # fuck that too
-
     from _resize_buffer import resize_boids_buffer
     from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
     from _custom_profiles import set_custom_profile_1
@@ -287,24 +273,4 @@ class MyWindow(moderngl_window.WindowConfig):
     from _cleanup import cleanup
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    # parser.add_argument('-N', metavar='N', type=int, required=False)
-
-    # args = moderngl_window.parse_args(parser=parser)
-    # moderngl_window.run_window_config(MyWindow, args=['-N', '1024'])
-    # print(moderngl_window.parse_args(args=""))
     MyWindow.run()
-
-
-"""
-
-argv: -boid_count 100 000
-
-def get_buffer_size
-    return next_power_of_2(self.boid_count)
-
-
-
-"""

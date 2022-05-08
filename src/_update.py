@@ -1,6 +1,6 @@
 import struct
 import glm
-from math import ceil, log2
+from math import ceil, log2, fmod
 from time import perf_counter
 
 from OpenGL import GL
@@ -56,7 +56,7 @@ def update(self, time_since_start, frametime):
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
-    self.program['RESIZE']['u_time'] = time_since_start
+    self.program['RESIZE']['u_time'] = fmod(time_since_start, 1.0) ## need modulo or risk of losing float precision
 
     self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
@@ -132,27 +132,6 @@ def update(self, time_since_start, frametime):
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
 
-    # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
-    # data = struct.iter_unpack('fffIffff', data)
-    # data = [v for v in data]
-    # if any(isnan(x[0]) for x in data):
-    #     print('ISNAN')
-    #     exit()
-    # for d in data:
-    #     print(d)
-    # print(data)
-
-    # data = self.buffer_cell_count_1.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
-    # data = struct.iter_unpack('I', data)
-    # data = [v[0] for v in data]
-    # print(data)
-    # print(sum(data))
-
-    # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
-    # print("sorted: {}".format(is_sorted))
-
-    # exit()
-
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
@@ -160,3 +139,23 @@ def update(self, time_since_start, frametime):
     # with self.query:
     self.program[self.map_type].run(x, 1, 1)
     # self.debug_values['boids compute'] = self.query.elapsed * 10e-7
+
+
+# data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
+# data = struct.iter_unpack('fffIffff', data)
+# data = [v for v in data]
+# if any(isnan(x[0]) for x in data):
+#     print('ISNAN')
+#     exit()
+# for d in data:
+#     print(d)
+# print(data)
+
+# data = self.buffer_cell_count_1.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
+# data = struct.iter_unpack('I', data)
+# data = [v[0] for v in data]
+# print(data)
+# print(sum(data))
+
+# is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
+# print("sorted: {}".format(is_sorted))
