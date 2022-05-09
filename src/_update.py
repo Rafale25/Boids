@@ -55,14 +55,18 @@ def update(self, time_since_start, frametime):
 
     boid = self.buffer_query_boid.read(size=32)
     boid = struct.unpack('fffIfffI', boid)
-    # print(boid)
     # cameraMatrix = glm.mat4(1.0)
-    cameraMatrix = glm.lookAt(glm.vec3(0, 0, 0), glm.vec3(boid[0], boid[1], boid[2]), glm.vec3(0, 1, 0))
+    # cameraMatrix = glm.lookAt(glm.vec3(0, 0, 0), glm.vec3(boid[0], boid[1], boid[2]), glm.vec3(0, 1, 0))
+    pos = glm.vec3(*boid[0:3])
+    # dir = glm.vec3(boid[4], boid[5], boid[6])
+    self.camera.target = pos
+    # dir = glm.vec3(*boid[3:6])
+    # cameraMatrix = glm.lookAt(pos, pos + dir, glm.vec3(0, 1, 0))
 
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
-            # program['u_viewMatrix'].write(self.camera.matrix)
-            program['u_viewMatrix'].write(cameraMatrix)
+            program['u_viewMatrix'].write(self.camera.matrix)
+            # program['u_viewMatrix'].write(cameraMatrix)
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
@@ -144,14 +148,6 @@ def update(self, time_since_start, frametime):
 
     # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     self.ctx.finish()
-
-
-    data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
-    data = struct.iter_unpack('fffIfffI', data)
-    data = [v for v in data]
-    for d in data:
-        print(d)
-    print()
 
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
