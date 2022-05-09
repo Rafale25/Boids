@@ -65,6 +65,8 @@ void main() {
         b.pos.xyz = pos;
         b.cell_index = 0;
         b.dir.xyz = dir;
+        b.id = index; // gives random id (id needs to be unique)
+        // b.id = hash(uint(index + u_time * 4294967295u)); // gives random id (id needs to be unique)
 
         boids_tmp[index] = b;
 

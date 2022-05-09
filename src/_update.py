@@ -45,14 +45,24 @@ def parallel_prefix_scan(self):
         self.buffer_cell_count_1, self.buffer_cell_count_2 = self.buffer_cell_count_2, self.buffer_cell_count_1
 
 def update(self, time_since_start, frametime):
-    # cameraMatrix = glm.mat4(1.0)
-    # boid = self.buffer_boid.read(size=32)
-    # boid = struct.unpack('fffIffff', boid)
+
+    self.buffer_boid.bind_to_storage_buffer(0)
+    self.buffer_query_boid.bind_to_storage_buffer(1)
+    self.program['FIND']['u_boid_count'] = self.boid_count
+    self.program['FIND']['id_to_find'] = 0
+    self.program['FIND'].run(group_x=ceil(float(self.boid_count) / self.local_size_x) )
+    self.ctx.finish()
+
+    boid = self.buffer_query_boid.read(size=32)
+    boid = struct.unpack('fffIfffI', boid)
     # print(boid)
+    # cameraMatrix = glm.mat4(1.0)
+    cameraMatrix = glm.lookAt(glm.vec3(0, 0, 0), glm.vec3(boid[0], boid[1], boid[2]), glm.vec3(0, 1, 0))
 
     for _, program in self.program.items():
         if 'u_viewMatrix' in program:
-            program['u_viewMatrix'].write(self.camera.matrix)
+            # program['u_viewMatrix'].write(self.camera.matrix)
+            program['u_viewMatrix'].write(cameraMatrix)
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
 
@@ -96,7 +106,8 @@ def update(self, time_since_start, frametime):
     self.program['RESET_CELLS'].run(x)
     # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    self.ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     # with self.query:
@@ -104,7 +115,8 @@ def update(self, time_since_start, frametime):
     # self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
     # self.program_run(self.program['UPDATE_BOID_CELL_INDEX'], x=x, debug='UPDATE_BOID_CELL_INDEX')
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    self.ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count_1.bind_to_storage_buffer(1)
@@ -112,12 +124,13 @@ def update(self, time_since_start, frametime):
     self.program['INCREMENT_CELL_COUNTER'].run(x)
     # self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    self.ctx.finish()
 
     # t1 = perf_counter()
     self.parallel_prefix_scan()
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
-    # self.ctx.finish()
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    self.ctx.finish()
     # t2 = perf_counter()
     # self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
 
@@ -129,8 +142,17 @@ def update(self, time_since_start, frametime):
     self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
     # self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
-    # self.ctx.finish()
+    # GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+    self.ctx.finish()
+
+
+    data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
+    data = struct.iter_unpack('fffIfffI', data)
+    data = [v for v in data]
+    for d in data:
+        print(d)
+    print()
+
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
@@ -144,9 +166,6 @@ def update(self, time_since_start, frametime):
 # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
 # data = struct.iter_unpack('fffIffff', data)
 # data = [v for v in data]
-# if any(isnan(x[0]) for x in data):
-#     print('ISNAN')
-#     exit()
 # for d in data:
 #     print(d)
 # print(data)

@@ -1,0 +1,32 @@
+#version 430 core
+
+#define LOCAL_SIZE_X 0
+
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
+
+#include shaders/boids/boid_struct.glsl
+
+layout(std430, binding=0) readonly restrict buffer buffer_boids {
+    Boid boids[];
+};
+
+layout(std430, binding=1) writeonly restrict buffer buffer_boid_query {
+    Boid boid_query[];
+};
+
+// layout(binding = 1) uniform atomic_uint atomic_count;
+
+uniform uint u_boid_count;
+uniform uint id_to_find;
+
+void main() {
+    const uint index = gl_GlobalInvocationID.x;
+
+    if (index >= u_boid_count)
+        return;
+
+    Boid b = boids[index];
+    if (b.id == id_to_find) {
+        boid_query[0] = b;
+    }
+}

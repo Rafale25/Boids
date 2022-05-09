@@ -125,6 +125,11 @@ class MyWindow(moderngl_window.WindowConfig):
                     path='./shaders/boids/compute/resize/copy.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
+            'FIND':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/find/find_boid_by_id.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
@@ -159,6 +164,8 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size(), dynamic=True)
         self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size, dynamic=True)
+
+        self.buffer_query_boid = self.ctx.buffer(reserve=32, dynamic=False)
 
         ## init the boid buffer
         self.program['RESIZE']['u_time'] = 1.0
