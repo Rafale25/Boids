@@ -28,6 +28,7 @@ void main() {
 
     const Boid boid = boids[index];
 
+    // atomics make that the boids are not always sorted in the same order (can cause problems)
     uint sorted_index = atomicAdd(cell_count[boid.cell_index], -1);
 
     boids_tmp[sorted_index - 1] = boid;

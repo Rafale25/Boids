@@ -14,8 +14,10 @@ from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
 
-from _mapType import MapType
+from mapType import MapType
 from utils import *
+
+# class 
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'

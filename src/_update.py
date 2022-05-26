@@ -86,42 +86,58 @@ def update(self, time_since_start, frametime):
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
     self.buffer_cell_count_1.bind_to_storage_buffer(0)
-    # with self.query:
-    self.program['RESET_CELLS'].run(x)
-    # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
+    with self.query:
+        self.program['RESET_CELLS'].run(x)
+    self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
-    # with self.query:
-    self.program['UPDATE_BOID_CELL_INDEX'].run(x)
-    # self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
-    # self.program_run(self.program['UPDATE_BOID_CELL_INDEX'], x=x, debug='UPDATE_BOID_CELL_INDEX')
+    with self.query:
+        self.program['UPDATE_BOID_CELL_INDEX'].run(x)
+    self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count_1.bind_to_storage_buffer(1)
-    # with self.query:
-    self.program['INCREMENT_CELL_COUNTER'].run(x)
-    # self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
+    with self.query:
+        self.program['INCREMENT_CELL_COUNTER'].run(x)
+    self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
 
-    # t1 = perf_counter()
+    t1 = perf_counter()
     self.parallel_prefix_scan()
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
-    # t2 = perf_counter()
-    # self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
+    t2 = perf_counter()
+    self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
+
+
+    # at 1.0 view distance, only half of the grid cells have a least 1 boid
+    # at 2.0 view distance, only a quarter (or even less) of the grid cells have a least 1 boid
+
+    ## NOTE: To compact a buffer, i need to do a prefix scan 
+
+    # self.ctx.finish()
+    # data = self.buffer_cell_count_1.read_chunks(chunk_size=4, start=0, step=4, count=self.boid_count)
+    # data = struct.iter_unpack('I', data)
+    # data = [v[0] for v in data]
+    #
+    # nb = 0
+    # for i in range(1, len(data)):
+    #     # if data[i] != data[i - 1]:
+    #     nb += data[i] != data[i - 1]
+    # print(nb)
 
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
-    # with self.query:
-    self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
-    # self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
+    with self.query:
+        self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
+    self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
     # self.ctx.finish()
@@ -130,9 +146,9 @@ def update(self, time_since_start, frametime):
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
 
-    # with self.query:
-    self.program[self.map_type].run(x, 1, 1)
-    # self.debug_values['boids compute'] = self.query.elapsed * 10e-7
+    with self.query:
+        self.program[self.map_type].run(x, 1, 1)
+    self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
 
 # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
