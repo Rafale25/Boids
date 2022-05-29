@@ -17,7 +17,7 @@ from moderngl_window.opengl.vao import VAO
 from mapType import MapType
 from utils import *
 
-# class 
+# class
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -127,22 +127,31 @@ class MyWindow(moderngl_window.WindowConfig):
                     path='./shaders/boids/compute/resize/copy.comp',
                     defines={'LOCAL_SIZE_X': self.local_size_x}),
 
+            'FLAG':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/prefix_sum/flag.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+            'SCATTER':
+                self.load_compute_shader(
+                    path='./shaders/boids/compute/prefix_sum/scatter.comp',
+                    defines={'LOCAL_SIZE_X': self.local_size_x}),
+
 
             MapType.MAP_CUBE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_update.comp',
+                    path='./shaders/boids/compute/boid_update_sharedmemory.comp',
                     defines={'CUBE_T': 1, 'LOCAL_SIZE_X': self.local_size_x}),
             MapType.MAP_CUBE:
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_update.comp',
+                    path='./shaders/boids/compute/boid_update_sharedmemory.comp',
                     defines={'CUBE': 1, 'LOCAL_SIZE_X': self.local_size_x}),
             MapType.MAP_SPHERE_T:
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_update.comp',
+                    path='./shaders/boids/compute/boid_update_sharedmemory.comp',
                     defines={'SPHERE_T': 1, 'LOCAL_SIZE_X': self.local_size_x}),
             MapType.MAP_SPHERE:
                 self.load_compute_shader(
-                    path='./shaders/boids/compute/boid_update.comp',
+                    path='./shaders/boids/compute/boid_update_sharedmemory.comp',
                     defines={'SPHERE': 1, 'LOCAL_SIZE_X': self.local_size_x}),
 
             'BORDER':
@@ -161,6 +170,13 @@ class MyWindow(moderngl_window.WindowConfig):
 
         self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size(), dynamic=True)
         self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size, dynamic=True)
+
+        self.buffer_flag_1 = self.ctx.buffer(reserve=4*self.boid_count, dynamic=True)
+        self.buffer_flag_2 = self.ctx.buffer(reserve=self.buffer_flag_1.size, dynamic=True)
+        self.buffer_flag_1.clear()
+        self.buffer_flag_2.clear()
+
+        self.buffer_compact_cells = self.ctx.buffer(reserve=4*self.boid_count, dynamic=True)
 
         ## init the boid buffer
         self.program['RESIZE']['u_time'] = 1.0
@@ -268,7 +284,7 @@ class MyWindow(moderngl_window.WindowConfig):
     from _gui import gui_newFrame, gui_draw
 
     from _render import render
-    from _update import update, parallel_prefix_scan
+    from _update import update, parallel_prefix_scan, parallel_prefix_scan_flag
 
     from _sort import sort
 

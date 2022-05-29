@@ -1,0 +1,30 @@
+#version 460 core
+
+#define LOCAL_SIZE_X 0
+
+layout(local_size_x=LOCAL_SIZE_X, local_size_y=1, local_size_z=1) in;
+
+// layout(std430, binding=0) readonly buffer buffer_1 {
+//     uint buffer_uncompacted[];
+// };
+
+layout(std430, binding=0) writeonly buffer buffer_2 {
+    uint buffer_compacted[];
+};
+
+layout(std430, binding=1) buffer buffer_3 {
+    uint buffer_scan[];
+};
+
+uniform uint SIZE;
+
+void main() {
+    const uint index = gl_GlobalInvocationID.x;
+
+    if (index >= SIZE)
+        return;
+
+    uint sorted_index = atomicAdd(buffer_scan[index], -1);
+
+    buffer_compacted[sorted_index - 1] = index;//buffer_uncompacted[index];
+}
