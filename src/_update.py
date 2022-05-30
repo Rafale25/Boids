@@ -102,7 +102,7 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
     self.program[self.map_type]['map_size'] = self.map_size
-    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
+    # self.program[self.map_type]['cell_spacing'] = self.cell_spacing
 
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
 
@@ -202,7 +202,8 @@ def update(self, time_since_start, frametime):
     self.buffer_compact_cells.bind_to_storage_buffer(3)
 
     with self.query:
-        self.program[self.map_type].run( ceil(float(self.boid_count) / 32) )
+        self.program[self.map_type].run( maximum )
+        # self.program[self.map_type].run( ceil(float(self.boid_count) / 32) )
     self.debug_values['boids compute'] = self.query.elapsed * 10e-7
 
 

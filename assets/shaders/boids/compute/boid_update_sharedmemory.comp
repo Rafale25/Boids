@@ -29,7 +29,9 @@ layout(std430, binding=3) readonly buffer buffer_compact_cells {
     uint compact_cells[];
 };
 
-shared uint counter; // atomic
+shared uint neighbours_counter; // atomic
+
+shared Boid neighbours[1024];
 
 uniform int boid_count;
 uniform float speed;
@@ -41,7 +43,7 @@ uniform float separation_force;
 uniform float alignment_force;
 uniform float cohesion_force;
 
-uniform float cell_spacing;
+// uniform float cell_spacing;
 
 #include shaders/boids/cell_xyz.glsl
 #include shaders/boids/hash.glsl
@@ -54,6 +56,12 @@ ivec3 index2Cell(uint index) {
     return ivec3(x, y, z);
 }
 
+/*
+load neighbours in shared memory
+find/get the number of boid in current cell
+distribute computation evenly between the 32 threads
+*/
+
 void main() {
     const uint index = gl_GlobalInvocationID.x;
 
@@ -61,18 +69,42 @@ void main() {
         return;
     }
 
-    if (gl_LocalInvocationID == 0) {
-        counter = 0;
+    if (gl_LocalInvocationID.x == 0) {
+        neighbours_counter = 0;
     }
     memoryBarrierShared();
 
     // shared memory filling
     const uint current_cell_index = compact_cells[gl_WorkGroupID.x];
-    // const uint
+    // const uint current_cell_boid_count = ;
 
 
+    // const uint cell_coord = index2Cell(gl_LocalInvocationID.x);
+    // if (gl_LocalInvocationID.x < 27) {}
+
+    const ivec3 ourCell = index2Cell(current_cell_index);
+
+    if (gl_LocalInvocationID.x == 0) {
+        for (int z = ourCell.z - 1; z <= ourCell.z + 1; ++z) {
+        for (int y = ourCell.y - 1; y <= ourCell.y + 1; ++y) {
+        for (int x = ourCell.x - 1; x <= ourCell.x + 1; ++x) {
+
+            const uint cell_index = hash(ivec3(x, y, z), boid_count);
+
+            for (uint i = cell_start[cell_index] ; In_boids.boids[i].cell_index == cell_index && i < boid_count ; ++i) {
+
+                neighbours[neighbours_counter] = In_boids.boids[i];
+
+                neighbours_counter += 1;
+            }
+
+        }
+        }
+        }
+    }
+
+    memoryBarrierShared();
     // --
-
 
     vec3 ourDir = In_boids.boids[index].dir.xyz;
     vec3 ourPos = In_boids.boids[index].pos.xyz + (ourDir * speed);
@@ -82,51 +114,30 @@ void main() {
     vec3 averagePosition = vec3(0.0, 0.0, 0.0);
     vec3 totalForce = vec3(0.0, 0.0, 0.0);
 
+    /*
+    for (uint i = 0 ; i < neighbours_counter ; ++i) {
+        if (index == i) continue; // don't check if itself
 
-    const ivec3 ourCell = cell_xyz(ourPos, cell_spacing);
-    // const ivec3 low = cell_xyz(ourPos - view_distance, cell_spacing);
-    // const ivec3 high = cell_xyz(ourPos + view_distance, cell_spacing);
+        const vec3 theirPos = neighbours[i].pos.xyz;
+        const vec3 theirDir = neighbours[i].dir.xyz;
 
-    // cull cells out of field of view
-    for (int z = ourCell.z - 1; z <= ourCell.z + 1; ++z) {
-    for (int y = ourCell.y - 1; y <= ourCell.y + 1; ++y) {
-    for (int x = ourCell.x - 1; x <= ourCell.x + 1; ++x) {
+        const vec3 offset = ourPos - theirPos;
+        const float sqrDist = dot(offset, offset);
+        if (sqrDist < view_distance * view_distance) {
 
-        const vec3 cellWorldPos = (vec3(x, y, z) + 0.5) * cell_spacing;
-        const float r = dot((cellWorldPos - ourPos)/length(cellWorldPos - ourPos), ourDir/length(ourDir));
-        if (length(acos(r)) <= view_angle) {
-        // if (isPointInFieldOfView(ourPos, ourDir, cellWorldPos, view_angle)) {
+            // length definitly has an impact on performances
+            const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir));
+            if (length(acos(r)) <= view_angle) {
+                nb_flockmates += 1;
+                averageDirection += theirDir;
+                averagePosition += theirPos;
 
-            const uint cell_index = hash(ivec3(x, y, z), boid_count);
-            // const uint cell_index = hash(cell_xyz(vec3(x, y, z)));
-            // TODO: read In_boids.boids[j] since all the data is in the boid buffer now // tried one time without much success
-            for (uint j = cell_start[cell_index] ; In_boids.boids[j].cell_index == cell_index && j < boid_count ; ++j) {
-                if (index == j) continue; // don't check if itself
-
-                const vec3 theirPos = In_boids.boids[j].pos.xyz;
-                const vec3 theirDir = In_boids.boids[j].dir.xyz;
-
-                const vec3 offset = ourPos - theirPos;
-                const float sqrDist = dot(offset, offset);
-                if (sqrDist < view_distance * view_distance) {
-
-                    // length definitly has an impact on performances
-                    const float r = dot((theirPos - ourPos)/length(theirPos - ourPos), ourDir/length(ourDir));
-                    if (length(acos(r)) <= view_angle) {
-                        nb_flockmates += 1;
-                        averageDirection += theirDir;
-                        averagePosition += theirPos;
-
-                        // separation
-                        totalForce += offset / sqrDist;
-                    }
-                }
+                // separation
+                totalForce += offset / sqrDist;
             }
         }
-
     }
-    }
-    }
+    */
 
     // separation
     ourDir += totalForce * separation_force;

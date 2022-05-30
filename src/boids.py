@@ -17,7 +17,6 @@ from moderngl_window.opengl.vao import VAO
 from mapType import MapType
 from utils import *
 
-# class
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
