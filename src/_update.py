@@ -201,6 +201,8 @@ def update(self, time_since_start, frametime):
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
     self.buffer_compact_cells.bind_to_storage_buffer(3)
 
+    print(maximum)
+
     with self.query:
         self.program[self.map_type].run( maximum )
         # self.program[self.map_type].run( ceil(float(self.boid_count) / 32) )
