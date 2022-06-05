@@ -60,6 +60,9 @@ ivec3 index2Cell(uint index) {
 load neighbours in shared memory
 find/get the number of boid in current cell
 distribute computation evenly between the 32 threads
+
+TODO: need to keep the xyz coord in compacted cells because we can't convert back the index to xyz if they were negative
+
 */
 
 void main() {
