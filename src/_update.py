@@ -102,7 +102,7 @@ def update(self, time_since_start, frametime):
     self.program[self.map_type]['cohesion_force'] = self.cohesion_force * 0.07
 
     self.program[self.map_type]['map_size'] = self.map_size
-    # self.program[self.map_type]['cell_spacing'] = self.cell_spacing
+    self.program[self.map_type]['cell_spacing'] = self.cell_spacing
 
     self.program['RESET_CELLS']['boid_count'] = self.boid_count
 
@@ -201,7 +201,7 @@ def update(self, time_since_start, frametime):
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
     self.buffer_compact_cells.bind_to_storage_buffer(3)
 
-    print(maximum)
+    # print(maximum)
 
     with self.query:
         self.program[self.map_type].run( maximum )
@@ -241,3 +241,7 @@ def update(self, time_since_start, frametime):
 
 # is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
 # print("sorted: {}".format(is_sorted))
+
+# 2 4 1 5 0 3
+# 2 6 7 12 12 15
+# 12 - 7

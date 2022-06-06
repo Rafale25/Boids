@@ -14,12 +14,12 @@ layout(local_size_x=32, local_size_y=1, local_size_z=1) in;
 #include shaders/boids/boid_struct.glsl
 
 layout(std430, binding=0) readonly buffer boids_in {
-    Boid boids[];
-} In_boids;
+    Boid in_boids[];
+};
 
-layout(std430, binding=1) writeonly restrict buffer boids_out {
-    Boid boids[];
-} Out_boids;
+layout(std430, binding=1) writeonly buffer boids_out {
+    Boid out_boids[];
+};
 
 layout(std430, binding=2) readonly buffer buffer_cell_start {
     uint cell_start[];
@@ -43,18 +43,11 @@ uniform float separation_force;
 uniform float alignment_force;
 uniform float cohesion_force;
 
-// uniform float cell_spacing;
+uniform float cell_spacing;
 
 #include shaders/boids/cell_xyz.glsl
 #include shaders/boids/hash.glsl
 
-
-ivec3 index2Cell(uint index) {
-    uint x = index % 3;
-    uint y = uint(index / 3);
-    uint z = uint(index / (3*3));
-    return ivec3(x, y, z);
-}
 
 /*
 load neighbours in shared memory
@@ -62,28 +55,25 @@ find/get the number of boid in current cell
 distribute computation evenly between the 32 threads
 
 TODO: need to keep the xyz coord in compacted cells because we can't convert back the index to xyz if they were negative
-
 */
 
 void main() {
-    const uint index = gl_GlobalInvocationID.x;
-
-    if (index >= boid_count) {
-        return;
-    }
 
     if (gl_LocalInvocationID.x == 0) {
         local_counter = 0;
     }
+
     memoryBarrierShared();
+    barrier();
 
     const uint current_cell_index = compact_cells[gl_WorkGroupID.x];
-    const uint current_cell_boid_count = index == 0 ? cell_start[index] : cell_start[index] - cell_start[index - 1];
+    const uint current_cell_boid_count = current_cell_index == 0 ? cell_start[current_cell_index] : cell_start[current_cell_index] - cell_start[current_cell_index - 1];
     const uint boid_per_thread = uint(ceil(float(current_cell_boid_count) / 32.0));
 
     // if (gl_LocalInvocationID.x < 27) {}
 
-    const ivec3 ourCell = index2Cell(current_cell_index); // problem here, not possible because of negative coords
+    // const ivec3 ourCell = index2Cell(current_cell_index); // problem here, not possible because of negative coords
+    const ivec3 ourCell = cell_xyz(in_boids[cell_start[current_cell_index]].pos, cell_spacing);
 
     // use first thread of workgroup to load boids in shared memory
     if (gl_LocalInvocationID.x == 0) {
@@ -93,8 +83,8 @@ void main() {
 
             uint cell_index = hash(ivec3(x, y, z), boid_count);
 
-            for (uint i = cell_start[cell_index] ; In_boids.boids[i].cell_index == cell_index && i < boid_count ; ++i) {
-                neighbours[local_counter] = In_boids.boids[i];
+            for (uint i = cell_start[cell_index] ; in_boids[i].cell_index == cell_index && i < boid_count ; ++i) {
+                neighbours[local_counter] = in_boids[i];
                 local_counter += 1;
             }
         }
@@ -102,24 +92,20 @@ void main() {
         }
     }
     memoryBarrierShared();
-
-
-
-
+    barrier();
 
 
     for (int i = 0 ; i < boid_per_thread ; ++i) {
         uint index_in_workgroup = (gl_LocalInvocationID.x * boid_per_thread) + i;
+        uint id = cell_start[current_cell_index] + index_in_workgroup;
 
-        if (index_in_workgroup > local_counter) {
-            break;
-        }
-
-        uint id = (gl_WorkGroupSize.x * index) + index_in_workgroup;
+        // if (index_in_workgroup > current_cell_boid_count) {
+        //     break;
+        // }
 
         // --
-        vec3 ourDir = In_boids.boids[id].dir.xyz;
-        vec3 ourPos = In_boids.boids[id].pos.xyz + (ourDir * speed);
+        vec3 ourDir = in_boids[id].dir.xyz;
+        vec3 ourPos = in_boids[id].pos.xyz + (ourDir * speed);
 
         uint nb_flockmates = 0;
         vec3 averageDirection = vec3(0.0, 0.0, 0.0);
@@ -127,10 +113,15 @@ void main() {
         vec3 totalForce = vec3(0.0, 0.0, 0.0);
 
         for (uint j = 0 ; j < local_counter ; ++j) {
-            // if (index == i) continue; // don't check if itself
+            // if (gl_GlobalInvocationID.x == i) continue; // don't check if itself
 
             const vec3 otherPos = neighbours[j].pos.xyz;
             const vec3 otherDir = neighbours[j].dir.xyz;
+
+            if (ourPos == otherPos) {
+                continue;
+            }
+
 
             const vec3 offset = ourPos - otherPos;
             const float sqrDist = dot(offset, offset);
@@ -204,7 +195,7 @@ void main() {
             }
         #endif
 
-        Out_boids.boids[id].pos.xyz = ourPos;
-        Out_boids.boids[id].dir.xyz = normalize(ourDir);
+        out_boids[id].pos.xyz = ourPos;
+        out_boids[id].dir.xyz = normalize(ourDir);
     }
 }
