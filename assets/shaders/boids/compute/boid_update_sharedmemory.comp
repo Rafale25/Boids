@@ -60,6 +60,8 @@ find/get the number of boid in current cell
 distribute computation evenly between the 32 threads
 
 TODO: need to keep the xyz coord in compacted cells because we can't convert back the index to xyz if they were negative
+
+BUG: bug with negative cell coordinates nit being preserve after hash
 */
 
 void main() {
