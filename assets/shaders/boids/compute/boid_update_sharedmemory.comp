@@ -1,6 +1,7 @@
-#version 430
+#version 460 core
 
 // #define LOCAL_SIZE_X 0
+#define THREADS_X 64
 
 #define CUBE 0
 #define CUBE_T 0
@@ -9,7 +10,7 @@
 
 #define PI 3.1415926535897932384626
 
-layout(local_size_x=32, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=THREADS_X, local_size_y=1, local_size_z=1) in;
 
 #include shaders/boids/boid_struct.glsl
 
@@ -27,6 +28,10 @@ layout(std430, binding=2) readonly buffer buffer_cell_start {
 
 layout(std430, binding=3) readonly buffer buffer_compact_cells {
     uint compact_cells[];
+};
+
+layout(std430, binding=4) readonly buffer buffer_cell_count {
+    uint cell_count[]; // original value of cell_start
 };
 
 shared uint local_counter;
@@ -64,11 +69,14 @@ void main() {
     }
 
     memoryBarrierShared();
-    barrier();
 
     const uint current_cell_index = compact_cells[gl_WorkGroupID.x];
-    const uint current_cell_boid_count = current_cell_index == 0 ? cell_start[current_cell_index] : cell_start[current_cell_index] - cell_start[current_cell_index - 1];
-    const uint boid_per_thread = uint(ceil(float(current_cell_boid_count) / 32.0));
+
+    // this value is incorrect because cell_start is used previously to sort boids
+    // const uint current_cell_boid_count = current_cell_index == 0 ? cell_start[current_cell_index] : cell_start[current_cell_index] - cell_start[current_cell_index - 1];
+    const uint current_cell_boid_count = cell_count[current_cell_index];
+
+    const uint boid_per_thread = uint(ceil(float(current_cell_boid_count) / float(THREADS_X)));
 
     // if (gl_LocalInvocationID.x < 27) {}
 
@@ -77,23 +85,24 @@ void main() {
 
     // use first thread of workgroup to load boids in shared memory
     if (gl_LocalInvocationID.x == 0) {
-        for (int z = ourCell.z - 1; z <= ourCell.z + 1; ++z) {
-        for (int y = ourCell.y - 1; y <= ourCell.y + 1; ++y) {
-        for (int x = ourCell.x - 1; x <= ourCell.x + 1; ++x) {
+        for (int z = ourCell.z - 1; z <= ourCell.z + 1 && local_counter < 1023; ++z) {
+        for (int y = ourCell.y - 1; y <= ourCell.y + 1 && local_counter < 1023; ++y) {
+        for (int x = ourCell.x - 1; x <= ourCell.x + 1 && local_counter < 1023; ++x) {
 
             uint cell_index = hash(ivec3(x, y, z), boid_count);
 
             for (uint i = cell_start[cell_index] ; in_boids[i].cell_index == cell_index && i < boid_count ; ++i) {
                 neighbours[local_counter] = in_boids[i];
                 local_counter += 1;
+                if (local_counter > 1023)
+                    break;
             }
         }
         }
         }
     }
     memoryBarrierShared();
-    barrier();
-
+    memoryBarrier();
 
     for (int i = 0 ; i < boid_per_thread ; ++i) {
         uint index_in_workgroup = (gl_LocalInvocationID.x * boid_per_thread) + i;
@@ -118,7 +127,8 @@ void main() {
             const vec3 otherPos = neighbours[j].pos.xyz;
             const vec3 otherDir = neighbours[j].dir.xyz;
 
-            if (ourPos == otherPos) {
+            // if (distance(otherPos, ourPos) < 0.1) {
+            if (all(ourPos == otherPos)) {
                 continue;
             }
 

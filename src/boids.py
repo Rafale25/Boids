@@ -170,6 +170,8 @@ class MyWindow(moderngl_window.WindowConfig):
         self.buffer_cell_count_1 = self.ctx.buffer(reserve=4*self.get_boid_buffer_size(), dynamic=True)
         self.buffer_cell_count_2 = self.ctx.buffer(reserve=self.buffer_cell_count_1.size, dynamic=True)
 
+        self.buffer_cell_count_tmp = self.ctx.buffer(reserve=self.buffer_cell_count_1.size, dynamic=True)
+
         self.buffer_flag_1 = self.ctx.buffer(reserve=4*self.boid_count, dynamic=True)
         self.buffer_flag_2 = self.ctx.buffer(reserve=self.buffer_flag_1.size, dynamic=True)
         self.buffer_flag_1.clear()

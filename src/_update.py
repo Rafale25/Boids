@@ -138,6 +138,9 @@ def update(self, time_since_start, frametime):
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
 
 
+    self.ctx.copy_buffer(dst=self.buffer_cell_count_tmp, src=self.buffer_cell_count_1)
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+
 
     # WORK HERE
     self.buffer_cell_count_1.bind_to_storage_buffer(0)
@@ -200,9 +203,9 @@ def update(self, time_since_start, frametime):
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
     self.buffer_compact_cells.bind_to_storage_buffer(3)
+    self.buffer_cell_count_tmp.bind_to_storage_buffer(4)
 
     # print(maximum)
-
     with self.query:
         self.program[self.map_type].run( maximum )
         # self.program[self.map_type].run( ceil(float(self.boid_count) / 32) )
