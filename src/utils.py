@@ -11,9 +11,9 @@ def random_uniform_vec3(): # vector from 2 angles
     yaw = uniform(-pi, pi)
     pitch = uniform(-pi/2, pi/2)
 
-    x = cos(yaw) * cos(pitch);
-    z = sin(yaw) * cos(pitch);
-    y = sin(pitch);
+    x = cos(yaw) * cos(pitch)
+    z = sin(yaw) * cos(pitch)
+    y = sin(pitch)
 
     return (x, y, z)
 
