@@ -3,7 +3,7 @@ from math import pi
 import glm
 import imgui
 
-from utils import *
+from .utils import *
 
 def resize(self, width: int, height: int):
     self.imgui.resize(width, height)

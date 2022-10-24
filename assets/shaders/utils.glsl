@@ -24,3 +24,12 @@ mat4 calcTranslateMat4(vec3 v) {
         v.x, v.y, v.z, 1.0
     );
 }
+
+int packColor(vec3 color) {
+    int packedColor = 0;
+    packedColor |= int(color.r*255) << 16;
+    packedColor |= int(color.g*255) << 8;
+    packedColor |= int(color.b*255);
+
+    return packedColor;
+}
