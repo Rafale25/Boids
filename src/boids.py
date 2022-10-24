@@ -14,8 +14,8 @@ from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
 
-from _mapType import MapType
-from utils import *
+from ._mapType import MapType
+from .utils import *
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -80,20 +80,20 @@ class MyWindow(moderngl_window.WindowConfig):
 
 
         self.program = {
-            'BOIDS':
-                self.load_program(
-                    vertex_shader='./shaders/boids/render/boid.vert',
-                    fragment_shader='./shaders/boids/render/boid.frag'),
+            # 'BOIDS':
+            #     self.load_program(
+            #         vertex_shader='./shaders/boids/render/boid.vert',
+            #         fragment_shader='./shaders/boids/render/boid.frag'),
 
             'BOIDS_GS':
                 self.load_program(
                     vertex_shader='./shaders/boids/render/boid_gs.vert',
                     geometry_shader='./shaders/boids/render/boid_gs.geom',
                     fragment_shader='./shaders/boids/render/boid.frag'),
-            'BOIDS_VS':
-                self.load_program(
-                    vertex_shader='./shaders/boids/render/boid_vs.vert',
-                    fragment_shader='./shaders/boids/render/boid.frag'),
+            # 'BOIDS_VS':
+            #     self.load_program(
+            #         vertex_shader='./shaders/boids/render/boid_vs.vert',
+            #         fragment_shader='./shaders/boids/render/boid.frag'),
 
             'RESET_CELLS':
                 self.load_compute_shader(
@@ -179,7 +179,7 @@ class MyWindow(moderngl_window.WindowConfig):
             ],
         )
         ## vertex pulling
-        self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
+        # self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
 
 
         ## Compass --------------------------------------------------------
@@ -260,17 +260,15 @@ class MyWindow(moderngl_window.WindowConfig):
     def get_boid_buffer_size(self):
         return next_power_of_2(self.boid_count)
 
-    from _resize_buffer import resize_boids_buffer
-    from _events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
-    from _custom_profiles import set_custom_profile_1
-    from _gui import gui_newFrame, gui_draw
+    from ._resize_buffer import resize_boids_buffer
+    from ._events import resize, key_event, mouse_position_event, mouse_drag_event, mouse_scroll_event, mouse_press_event, mouse_release_event, unicode_char_entered
+    from ._custom_profiles import set_custom_profile_1
+    from ._gui import gui_newFrame, gui_draw
 
-    from _render import render
-    from _update import update, parallel_prefix_scan
+    from ._render import render
+    from ._update import update, parallel_prefix_scan
 
-    from _sort import sort
+    from ._sort import sort
 
-    from _cleanup import cleanup
+    from ._cleanup import cleanup
 
-if __name__ == "__main__":
-    MyWindow.run()

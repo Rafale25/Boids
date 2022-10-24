@@ -1,2 +1,4 @@
 __pycache__
 imgui.ini
+/build
+/dist

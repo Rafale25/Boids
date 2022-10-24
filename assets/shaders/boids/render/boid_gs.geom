@@ -1,4 +1,4 @@
-#version 440
+#version 440 core
 
 #define PI 3.1415926538
 
@@ -7,7 +7,8 @@ layout (triangle_strip, max_vertices = 3*4) out;
 
 in vec3 g_for[];
 
-out vec3 f_color;
+// flat out vec3 f_color;
+flat out int f_color;
 
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_viewMatrix;
@@ -25,8 +26,8 @@ void main() {
     const float pi3 = ((2.0 * PI) / 3.0);
     const float radius = u_boidSize;
 
-    const mat4 mvp = u_projectionMatrix * u_viewMatrix;
     const mat4 rotation_translation_mat = calcTranslateMat4(position) * (calcRotateMat4Y(yaw) * calcRotateMat4Z(pitch));
+    const mat4 mvp = (u_projectionMatrix * u_viewMatrix) * rotation_translation_mat;
 
     vec4 p1, p2, p3;
 
@@ -35,12 +36,12 @@ void main() {
     p2 = vec4(-radius, (cos(pi3 * 2.0)) * radius*0.5, (sin(pi3 * 2.0)) * radius*0.5, 1.0);
     p3 = vec4(-radius, (cos(pi3 * 1.0)) * radius*0.5, (sin(pi3 * 1.0)) * radius*0.5, 1.0);
 
-    f_color = vec3(1.0, 0.0, 0.0);
-    gl_Position = mvp * rotation_translation_mat * p1;
+    f_color = packColor(vec3(1.0, 0.0, 0.0));
+    gl_Position = mvp * p1;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p2;
+    gl_Position = mvp * p2;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p3;
+    gl_Position = mvp * p3;
     EmitVertex();
     EndPrimitive();
 
@@ -50,12 +51,12 @@ void main() {
     p2 = vec4(-radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5, 1.0);
     p3 = vec4(-radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5, 1.0);
 
-    f_color = vec3(0.0, 1.0, 0.0);
-    gl_Position = mvp * rotation_translation_mat * p1;
+    f_color = packColor(vec3(0.0, 1.0, 0.0));
+    gl_Position = mvp * p1;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p2;
+    gl_Position = mvp * p2;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p3;
+    gl_Position = mvp * p3;
     EmitVertex();
     EndPrimitive();
 
@@ -64,12 +65,12 @@ void main() {
     p2 = vec4(-radius, (cos(pi3 * 1)) * radius*0.5, (sin(pi3 * 1)) * radius*0.5, 1.0);
     p3 = vec4(-radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5, 1.0);
 
-    f_color = vec3(0.0, 0.0, 1.0);
-    gl_Position = mvp * rotation_translation_mat * p1;
+    f_color = packColor(vec3(0.0, 0.0, 1.0));
+    gl_Position = mvp * p1;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p2;
+    gl_Position = mvp * p2;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p3;
+    gl_Position = mvp * p3;
     EmitVertex();
     EndPrimitive();
 
@@ -79,12 +80,12 @@ void main() {
     p2 = vec4(-radius, (cos(pi3 * 2)) * radius*0.5, (sin(pi3 * 2)) * radius*0.5, 1.0);
     p3 = vec4(-radius, (cos(pi3 * 0)) * radius*0.5, (sin(pi3 * 0)) * radius*0.5, 1.0);
 
-    f_color = vec3(0.0, 1.0, 1.0);
-    gl_Position = mvp * rotation_translation_mat * p1;
+    f_color = packColor(vec3(0.0, 1.0, 1.0));
+    gl_Position = mvp * p1;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p2;
+    gl_Position = mvp * p2;
     EmitVertex();
-    gl_Position = mvp * rotation_translation_mat * p3;
+    gl_Position = mvp * p3;
     EmitVertex();
     EndPrimitive();
 }
