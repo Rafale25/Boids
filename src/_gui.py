@@ -4,6 +4,7 @@ from math import pi
 
 def gui_newFrame(self):
     imgui.new_frame()
+
     imgui.begin("Properties", True)
 
     imgui.text("fps: {:.2f}".format(self.fps_counter.get_fps()))
@@ -16,9 +17,10 @@ def gui_newFrame(self):
     if changed:
         self.wnd.fullscreen = state
 
-    changed, state = imgui.checkbox("Vsync", self.wnd._window.vsync)
+    changed, state = imgui.checkbox("Vsync", self.wnd.vsync)
     if changed:
-        self.wnd._window.set_vsync(state)
+        self.wnd.vsync = state
+        # self.wnd._window.set_vsync(state)
 
     # changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
 
@@ -115,6 +117,7 @@ def gui_newFrame(self):
         self.set_custom_profile_1()
     imgui.end_group()
 
+    imgui.set_window_font_scale(2.0)
     imgui.end()
 
 def gui_draw(self):
