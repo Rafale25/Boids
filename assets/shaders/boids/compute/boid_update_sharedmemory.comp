@@ -129,8 +129,7 @@ void main() {
             const vec3 otherPos = neighbours[j].pos.xyz;
             const vec3 otherDir = neighbours[j].dir.xyz;
 
-            // if (distance(otherPos, ourPos) < 0.1) {
-            if (all(ourPos == otherPos)) {
+            if (distance(otherPos, ourPos) < 0.01) {
                 continue;
             }
 
