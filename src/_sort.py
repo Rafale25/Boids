@@ -10,15 +10,15 @@ def sort(self, program, n=-1, max_workgroup_size=1024):
     workgroup_size_x = 1
 
     if n < max_workgroup_size * 2:
-        workgroup_size_x = n // 2;
+        workgroup_size_x = n // 2
     else:
-        workgroup_size_x = max_workgroup_size;
+        workgroup_size_x = max_workgroup_size
 
     h = workgroup_size_x * 2
     assert (h <= n)
     assert (h % 2 == 0)
 
-    workgroup_count = n // ( workgroup_size_x * 2 );
+    workgroup_count = n // ( workgroup_size_x * 2 )
 
     program['u_h'] = h
     program['u_algorithm'] = Algorithm.LocalBitonicMergeSortExample
@@ -29,7 +29,7 @@ def sort(self, program, n=-1, max_workgroup_size=1024):
     h *= 2
 
     while (h <= n):
-        GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT); ## way better than ctx.finish()
+        GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
 
         program['u_h'] = h
         program['u_algorithm'] = Algorithm.BigFlip
@@ -40,7 +40,7 @@ def sort(self, program, n=-1, max_workgroup_size=1024):
 
         hh = h // 2
         while hh > 1:
-            GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+            GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
             if hh <= workgroup_size_x * 2:
                 program['u_h'] = hh

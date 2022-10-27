@@ -13,7 +13,7 @@ def resize_boids_buffer(self, old_count, new_count):
     self.program['RESIZE']['u_new_boid_count'] = new_count
     self.program['RESIZE'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid.orphan(new_count * 32)
 
@@ -22,7 +22,7 @@ def resize_boids_buffer(self, old_count, new_count):
     self.program['COPY']['u_boid_count'] = new_count
     self.program['COPY'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT);
+    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
     ## TODO: orphan to next power of 2, and never orphan to smaller size
     ## Note: orphan is actually very fast
