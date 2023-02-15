@@ -34,7 +34,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.ctx.gc_mode = "auto"
+        self.ctx.gc_mode = "auto"
 
         self.pause = False
 
@@ -72,7 +72,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.fps_counter = FpsCounter()
         self.debug_values = {}
         self.query = self.ctx.query(samples=False, time=True)
-        self.query_enabled = True
+        # self.query_enabled = True
 
         ## ImGui --
         imgui.create_context()

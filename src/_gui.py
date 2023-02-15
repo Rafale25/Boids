@@ -17,13 +17,12 @@ def gui_newFrame(self):
     if changed:
         self.wnd.fullscreen = state
 
-
-    changed, state = imgui.checkbox("Vsync", self.wnd._window.vsync)
-    if changed:
-        self.wnd._window.set_vsync(state)
-    # changed, state = imgui.checkbox("Vsync", self.wnd.vsync)
+    # changed, state = imgui.checkbox("Vsync", self.wnd._window.vsync)
     # if changed:
-    #     self.wnd.vsync = state
+    #     self.wnd._window.set_vsync(state)
+    changed, state = imgui.checkbox("Vsync", self.wnd.vsync)
+    if changed:
+        self.wnd.vsync = state
 
     # changed, self.query_enabled = imgui.checkbox("Query", self.query_enabled)
 
