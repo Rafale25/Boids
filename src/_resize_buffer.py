@@ -13,6 +13,7 @@ def resize_boids_buffer(self, old_count, new_count):
     self.program['RESIZE']['u_new_boid_count'] = new_count
     self.program['RESIZE'].run(x)
 
+    self.ctx.error
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid.orphan(new_count * 32)

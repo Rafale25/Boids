@@ -92,6 +92,7 @@ def update(self, time_since_start, frametime):
     self.program['RESET_CELLS'].run(x)
     # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
 
+    self.ctx.error ## silence the glInvalidOperation error
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)

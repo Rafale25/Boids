@@ -13,8 +13,8 @@ def render(self, time_since_start, frametime):
     self.compass.render(program=self.program['LINES'])
 
     self.buffer_boid.bind_to_storage_buffer(0)
-    with self.query:
-        self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
+    # with self.query:
+    self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
         # self.vao_vs.render(mode=moderngl.TRIANGLES, vertices=self.boid_count*4*3) ## slightly worse than geometry shader approach
     self.debug_values['boids render'] = self.query.elapsed * 10e-7
 

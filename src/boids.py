@@ -1,10 +1,11 @@
 #! /usr/bin/python3
 
-import logging
 from array import array
-from random import uniform
-from math import pi, cos, sin, ceil
+# from random import uniform
+from math import pi#, cos, sin, ceil
 from pathlib import Path
+import logging
+
 
 import moderngl
 import imgui
@@ -17,7 +18,14 @@ from moderngl_window.opengl.vao import VAO
 from ._mapType import MapType
 from .utils import *
 
-from OpenGL import GL
+# import glcontext
+# from OpenGL import GL
+# backend = glcontext.default_backend()
+# backend_ctx = backend(mode='standalone', glversion=330)
+
+def dump(obj):
+    for attr in dir(obj):
+        print("obj.%s = %r" % (attr, getattr(obj, attr)))
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -27,7 +35,7 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    log_level = logging.ERROR
+    # log_level = logging.ERROR
 
     @classmethod
     def add_arguments(cls, parser):
@@ -172,6 +180,9 @@ class MyWindow(moderngl_window.WindowConfig):
         # self.vao.buffer(self.boid_vertices, '3f', ['in_position'])
         # self.vao.buffer(self.boid_color, '3f', ['in_color'])
         # self.vao.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
+
+
+        # print(self.ctx.load('glDrawMeshTasksNV'))
 
         # mesh_shader = GL.glCreateShader(GL.)
         # fragment_shader = GL.glCreateShader(GL.GL_FRAGMENT_SHADER)
