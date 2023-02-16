@@ -34,7 +34,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.ctx.gc_mode = "auto"
+        # self.ctx.gc_mode = "auto"
 
         self.pause = False
 
@@ -90,10 +90,10 @@ class MyWindow(moderngl_window.WindowConfig):
                     vertex_shader='./shaders/boids/render/boid_gs.vert',
                     geometry_shader='./shaders/boids/render/boid_gs.geom',
                     fragment_shader='./shaders/boids/render/boid.frag'),
-            # 'BOIDS_VS':
-            #     self.load_program(
-            #         vertex_shader='./shaders/boids/render/boid_vs.vert',
-            #         fragment_shader='./shaders/boids/render/boid.frag'),
+            'BOIDS_VS':
+                self.load_program(
+                    vertex_shader='./shaders/boids/render/boid_vs2.vert',
+                    fragment_shader='./shaders/boids/render/boid.frag'),
 
             'RESET_CELLS':
                 self.load_compute_shader(
@@ -179,7 +179,7 @@ class MyWindow(moderngl_window.WindowConfig):
             ],
         )
         ## vertex pulling
-        # self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
+        self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
 
 
         ## Compass --------------------------------------------------------

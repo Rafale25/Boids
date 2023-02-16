@@ -49,6 +49,8 @@ def update(self, time_since_start, frametime):
             program['u_viewMatrix'].write(self.camera.matrix)
         if 'u_projectionMatrix' in program:
             program['u_projectionMatrix'].write(self.camera.projection.matrix)
+        if 'u_mvp' in program:
+            program['u_mvp'].write(self.camera.projection.matrix * self.camera.matrix)
 
     self.program['RESIZE']['u_time'] = fmod(time_since_start, 1.0) ## need modulo or risk of losing float precision
 

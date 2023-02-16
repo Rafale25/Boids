@@ -1,6 +1,15 @@
 pyglet==2.0.4
-pyopengl==3.1.6
-moderngl==5.7.4
+PyOpenGL==3.1.6
+# moderngl==5.7.4
+# moderngl==5.8.0
 moderngl-window==2.4.2
 pyglm==2.5.7
 imgui==1.4.0
+glfw==2.5.6
+
+# glcontext==2.3.7
+# multipledispatch==0.6.0
+# numpy==1.24.2
+# Pillow==9.4.0
+# pyrr==0.10.3
+# six==1.16.0

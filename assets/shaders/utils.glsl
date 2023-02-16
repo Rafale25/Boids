@@ -1,3 +1,12 @@
+mat4 calcScaleMat(float scale) {
+    return mat4(
+        scale, 0.0, 0.0, 0.0,
+        0.0, scale, 0.0, 0.0,
+        0.0, 0.0, scale, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    );
+}
+
 mat4 calcRotateMat4Y(float radian) {
     return mat4(
         cos(radian), 0.0, sin(radian), 0.0,
