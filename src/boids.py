@@ -17,6 +17,8 @@ from moderngl_window.opengl.vao import VAO
 from ._mapType import MapType
 from .utils import *
 
+from OpenGL import GL
+
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
@@ -170,6 +172,14 @@ class MyWindow(moderngl_window.WindowConfig):
         # self.vao.buffer(self.boid_vertices, '3f', ['in_position'])
         # self.vao.buffer(self.boid_color, '3f', ['in_color'])
         # self.vao.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
+
+        # mesh_shader = GL.glCreateShader(GL.)
+        # fragment_shader = GL.glCreateShader(GL.GL_FRAGMENT_SHADER)
+
+        # self.program_meshshader = GL.glCreateProgram(
+        #     GL.GL_MESH_SHADER_NV,
+        #     Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text()
+        # )
 
         ## geometry shader
         self.vao_gs = self.ctx.vertex_array(

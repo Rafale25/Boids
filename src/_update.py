@@ -54,7 +54,7 @@ def update(self, time_since_start, frametime):
 
     self.program['RESIZE']['u_time'] = fmod(time_since_start, 1.0) ## need modulo or risk of losing float precision
 
-    # self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
+    self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
     self.program['BORDER']['map_size'] = self.map_size
 
