@@ -1,14 +1,19 @@
 #! /usr/bin/python3
 
 from array import array
-# from random import uniform
-from math import pi#, cos, sin, ceil
+from math import pi
 from pathlib import Path
 import logging
 
-
 import moderngl
 import imgui
+
+import OpenGL as GL
+from OpenGL.GL import *
+
+from OpenGL.GL.NV.mesh_shader import glDrawMeshTasksNV
+from OpenGL.GL.NV.mesh_shader import GL_MESH_SHADER_NV, GL_TASK_SHADER_NV
+
 
 import moderngl_window
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
@@ -18,15 +23,6 @@ from moderngl_window.opengl.vao import VAO
 from ._mapType import MapType
 from .utils import *
 
-# import glcontext
-# from OpenGL import GL
-# backend = glcontext.default_backend()
-# backend_ctx = backend(mode='standalone', glversion=330)
-
-def dump(obj):
-    for attr in dir(obj):
-        print("obj.%s = %r" % (attr, getattr(obj, attr)))
-
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
@@ -35,7 +31,7 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    # log_level = logging.ERROR
+    log_level = logging.ERROR
 
     @classmethod
     def add_arguments(cls, parser):
@@ -181,16 +177,43 @@ class MyWindow(moderngl_window.WindowConfig):
         # self.vao.buffer(self.boid_color, '3f', ['in_color'])
         # self.vao.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
 
+        # ----
 
-        # print(self.ctx.load('glDrawMeshTasksNV'))
+        def check_compile_error(id, type):
+            if type != 'PROGRAM':
+                status = glGetShaderiv(id, GL_COMPILE_STATUS)
+                if not status:
+                    print(glGetShaderInfoLog(id))
+            else:
+                status = glGetProgramiv(id, GL_LINK_STATUS)
+                if not status:
+                    print(glGetProgramInfoLog(id))
 
-        # mesh_shader = GL.glCreateShader(GL.)
-        # fragment_shader = GL.glCreateShader(GL.GL_FRAGMENT_SHADER)
+        # GL_TASK_SHADER_NV
+        mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
+        glShaderSource(
+            mesh_shader,
+            Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
+        )
+        glCompileShader(mesh_shader)
+        check_compile_error(mesh_shader, 'MESH')
 
-        # self.program_meshshader = GL.glCreateProgram(
-        #     GL.GL_MESH_SHADER_NV,
-        #     Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text()
-        # )
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+        glShaderSource(
+            fragment_shader,
+            Path('./assets/shaders/boids/render/boid_mesh.frag').read_text(),
+        )
+        glCompileShader(fragment_shader)
+        check_compile_error(fragment_shader, 'FRAGMENT')
+
+        self.meshProgram = glCreateProgram()
+        glAttachShader(self.meshProgram, mesh_shader)
+        glAttachShader(self.meshProgram, fragment_shader)
+        glLinkProgram(self.meshProgram)
+
+        check_compile_error(self.meshProgram, 'PROGRAM')
+        # ----
+
 
         ## geometry shader
         self.vao_gs = self.ctx.vertex_array(
