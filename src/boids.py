@@ -31,7 +31,7 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    # log_level = logging.ERROR
+    log_level = logging.ERROR
 
     @classmethod
     def add_arguments(cls, parser):
@@ -40,7 +40,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.ctx.gc_mode = "auto"
+        self.ctx.gc_mode = "auto"
 
         self.pause = False
 
@@ -73,11 +73,12 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
         self._shift = False
+        self.render_mode = 1
 
         ## Debug
         self.fps_counter = FpsCounter()
         self.debug_values = {}
-        self.query = self.ctx.query(samples=False, time=True)
+        self.query = self.ctx.query(samples=False, time=True, primitives=True)
         # self.query_enabled = True
 
         ## ImGui --
@@ -193,7 +194,9 @@ class MyWindow(moderngl_window.WindowConfig):
         mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
         glShaderSource(
             mesh_shader,
-            Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
+            Path('./assets/shaders/boids/render/boid_meshShader3.glsl').read_text(),
+            # Path('./assets/shaders/boids/render/boid_meshShader2.glsl').read_text(),
+            # Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
         )
         glCompileShader(mesh_shader)
         check_compile_error(mesh_shader, 'MESH')
