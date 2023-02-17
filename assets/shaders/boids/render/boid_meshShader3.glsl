@@ -23,9 +23,9 @@ void main()
     gl_MeshVerticesNV[offset_vertex + 1].gl_Position = u_mvp * vec4(vertices[1] + offset_pos, 1.0);
     gl_MeshVerticesNV[offset_vertex + 2].gl_Position = u_mvp * vec4(vertices[2] + offset_pos, 1.0);
 
-    gl_PrimitiveIndicesNV[offset_vertex + 0] = 0;
-    gl_PrimitiveIndicesNV[offset_vertex + 1] = 1;
-    gl_PrimitiveIndicesNV[offset_vertex + 2] = 2;
+    gl_PrimitiveIndicesNV[offset_vertex + 0] = offset_vertex + 0;
+    gl_PrimitiveIndicesNV[offset_vertex + 1] = offset_vertex + 1;
+    gl_PrimitiveIndicesNV[offset_vertex + 2] = offset_vertex + 2;
 
     gl_PrimitiveCountNV = 8;
 }

@@ -33,13 +33,14 @@ def render(self, time_since_start, frametime):
         glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, self.camera.projection.matrix * self.camera.matrix)
         self.buffer_boid.bind_to_storage_buffer(0)
         # num_workgroups = self.boid_count
-        # num_workgroups = ceil(float(self.boid_count) / 16)
+        num_workgroups = ceil(float(self.boid_count) / 16)
+        glDrawMeshTasksNV(0, num_workgroups)
         # print(f'num_workgroups: {num_workgroups}')
-        with self.query:
-            self.ctx.error
-            glDrawMeshTasksNV(0, 1)
-        self.ctx.error
-        print(self.query.primitives)
+        # with self.query:
+        #     self.ctx.error
+        #     glDrawMeshTasksNV(0, 2)
+        # self.ctx.error
+        # print(self.query.primitives)
 
     if self.map_type in (MapType.MAP_CUBE, MapType.MAP_CUBE_T):
         self.borders.render(program=self.program['BORDER'])

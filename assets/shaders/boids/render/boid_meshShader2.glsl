@@ -15,10 +15,10 @@ layout(std430, binding=0) restrict readonly buffer buffer_boids {
     Boid boids[];
 };
 
-// layout(local_size_x = 1) in;
+#define N_BOIDS 16 // 32
 // layout(local_size_x = 32) in; // 32 = size of a nvidia warp
-layout(local_size_x = 16) in; // 64 vertices output recommended -> 16 boids
-layout(triangles, max_vertices = 4*16, max_primitives = 4*16) out;
+layout(local_size_x = N_BOIDS) in; // 64 vertices output recommended -> 16 boids
+layout(triangles, max_vertices = 4*N_BOIDS, max_primitives = 4*N_BOIDS) out;
 
 // Custom vertex output block
 layout (location = 0) out PerVertexData
@@ -99,29 +99,30 @@ const int[] colors = {
 
 void main()
 {
+    // if (gl_GlobalInvocationID.x > 16) // boid_count ## ADD THIS
+    //     return;
+
     uint boid_id = gl_GlobalInvocationID.x;
-    // uint boid_id = gl_WorkGroupID.x + gl_LocalInvocationID.x;
     uint thread_id = gl_LocalInvocationID.x;
-    // uint thread_id = gl_WorkGroupID.x;
 
     vec3 position = boids[boid_id].pos;
     vec3 forward = boids[boid_id].dir;
-    // vec3 position = vec3(2.0, 0.0, 0.0) * thread_id;
-    // vec3 forward = vec3(0.0, 0.0, 0.0);
 
     float yaw = atan(forward.z, forward.x);
     float pitch = abs(atan(sqrt(forward.x*forward.x + forward.z*forward.z), forward.y)) - (PI/2.0);
     mat4 rotation_translation_mat = calcTranslateMat4(position) * (calcRotateMat4Y(yaw) * calcRotateMat4Z(pitch));
     // rotation_translation_mat = calcScaleMat(u_boidSize) * rotation_translation_mat;
+    mat4 mvp_rot_scale = u_mvp * rotation_translation_mat * calcScaleMat(u_boidSize);
 
-    const uint offset_vertex = thread_id * 4;
-    const uint offset_index = thread_id * 12;
+    uint offset_vertex = thread_id * 4;
+    uint offset_index = thread_id * 12;
+    uint offset_index_triangle = thread_id * 4; // OMG this f****** index <- !!
 
     // Vertices position
-    gl_MeshVerticesNV[offset_vertex + 0].gl_Position = u_mvp * rotation_translation_mat * calcScaleMat(u_boidSize) * vertices[0];
-    gl_MeshVerticesNV[offset_vertex + 1].gl_Position = u_mvp * rotation_translation_mat * calcScaleMat(u_boidSize) * vertices[1];
-    gl_MeshVerticesNV[offset_vertex + 2].gl_Position = u_mvp * rotation_translation_mat * calcScaleMat(u_boidSize) * vertices[2];
-    gl_MeshVerticesNV[offset_vertex + 3].gl_Position = u_mvp * rotation_translation_mat * calcScaleMat(u_boidSize) * vertices[3];
+    gl_MeshVerticesNV[offset_vertex + 0].gl_Position = mvp_rot_scale * vertices[0];
+    gl_MeshVerticesNV[offset_vertex + 1].gl_Position = mvp_rot_scale * vertices[1];
+    gl_MeshVerticesNV[offset_vertex + 2].gl_Position = mvp_rot_scale * vertices[2];
+    gl_MeshVerticesNV[offset_vertex + 3].gl_Position = mvp_rot_scale * vertices[3];
     /// 0...64
 
     // Vertices color
@@ -131,22 +132,22 @@ void main()
     v_out[offset_vertex + 3].color = colors[3]; // can't have color per triangle with indices, need to find a solution
 
     // Triangle indices
-    gl_PrimitiveIndicesNV[offset_index + 0] = 0;
-    gl_PrimitiveIndicesNV[offset_index + 1] = 1;
-    gl_PrimitiveIndicesNV[offset_index + 2] = 2;
+    gl_PrimitiveIndicesNV[offset_index + 0] = offset_index_triangle + 0;
+    gl_PrimitiveIndicesNV[offset_index + 1] = offset_index_triangle + 1;
+    gl_PrimitiveIndicesNV[offset_index + 2] = offset_index_triangle + 2;
 
-    gl_PrimitiveIndicesNV[offset_index + 3] = 3;
-    gl_PrimitiveIndicesNV[offset_index + 4] = 0;
-    gl_PrimitiveIndicesNV[offset_index + 5] = 2;
+    gl_PrimitiveIndicesNV[offset_index + 3] = offset_index_triangle + 3;
+    gl_PrimitiveIndicesNV[offset_index + 4] = offset_index_triangle + 0;
+    gl_PrimitiveIndicesNV[offset_index + 5] = offset_index_triangle + 2;
 
-    gl_PrimitiveIndicesNV[offset_index + 6] = 3;
-    gl_PrimitiveIndicesNV[offset_index + 7] = 2;
-    gl_PrimitiveIndicesNV[offset_index + 8] = 1;
+    gl_PrimitiveIndicesNV[offset_index + 6] = offset_index_triangle + 3;
+    gl_PrimitiveIndicesNV[offset_index + 7] = offset_index_triangle + 2;
+    gl_PrimitiveIndicesNV[offset_index + 8] = offset_index_triangle + 1;
 
-    gl_PrimitiveIndicesNV[offset_index + 9] = 3;
-    gl_PrimitiveIndicesNV[offset_index + 10] = 1;
-    gl_PrimitiveIndicesNV[offset_index + 11] = 0;
+    gl_PrimitiveIndicesNV[offset_index + 9] = offset_index_triangle + 3;
+    gl_PrimitiveIndicesNV[offset_index + 10] = offset_index_triangle + 1;
+    gl_PrimitiveIndicesNV[offset_index + 11] = offset_index_triangle + 0;
 
     // Number of triangles
-    gl_PrimitiveCountNV = 4*16;
+    gl_PrimitiveCountNV = 4*N_BOIDS;
 }

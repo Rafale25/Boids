@@ -194,8 +194,8 @@ class MyWindow(moderngl_window.WindowConfig):
         mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
         glShaderSource(
             mesh_shader,
-            Path('./assets/shaders/boids/render/boid_meshShader3.glsl').read_text(),
-            # Path('./assets/shaders/boids/render/boid_meshShader2.glsl').read_text(),
+            # Path('./assets/shaders/boids/render/boid_meshShader3.glsl').read_text(),
+            Path('./assets/shaders/boids/render/boid_meshShader2.glsl').read_text(),
             # Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
         )
         glCompileShader(mesh_shader)
