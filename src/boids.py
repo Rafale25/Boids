@@ -22,6 +22,7 @@ from moderngl_window.opengl.vao import VAO
 
 from ._mapType import MapType
 from .utils import *
+from .query import Query
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -79,7 +80,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.fps_counter = FpsCounter()
         self.debug_values = {}
         self.query = self.ctx.query(samples=False, time=True, primitives=True)
-        # self.query_enabled = True
 
         ## ImGui --
         imgui.create_context()
@@ -194,9 +194,7 @@ class MyWindow(moderngl_window.WindowConfig):
         mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
         glShaderSource(
             mesh_shader,
-            # Path('./assets/shaders/boids/render/boid_meshShader3.glsl').read_text(),
-            Path('./assets/shaders/boids/render/boid_meshShader2.glsl').read_text(),
-            # Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
+            Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
         )
         glCompileShader(mesh_shader)
         check_compile_error(mesh_shader, 'MESH')

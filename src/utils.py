@@ -1,9 +1,6 @@
 from random import uniform
 from math import pi, cos, sin, log2, pow, ceil
 
-# def fclamp(x, min_x, max_x):
-#     return (max(min(x, max_x), min_x))
-
 def next_power_of_2(x):
     return int(pow(2, ceil(log2(x)/log2(2))))
 
@@ -18,15 +15,15 @@ def random_uniform_vec3(): # vector from 2 angles
     return (x, y, z)
 
 class FpsCounter:
-    NB_SAMPLE = 20
+    NB_SAMPLE = 30
 
     def __init__(self):
-        self.fps_data = [0]*FpsCounter.NB_SAMPLE
+        self.fps_data = [0] * FpsCounter.NB_SAMPLE
         self.next_sample_indice = 0
 
     def update(self, fps_sample):
         self.fps_data[self.next_sample_indice] = fps_sample
-        self.next_sample_indice = (self.next_sample_indice+1) % FpsCounter.NB_SAMPLE
+        self.next_sample_indice = (self.next_sample_indice + 1) % FpsCounter.NB_SAMPLE
 
     def get_fps(self):
         n = sum(self.fps_data) / FpsCounter.NB_SAMPLE

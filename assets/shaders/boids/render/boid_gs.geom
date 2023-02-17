@@ -8,11 +8,8 @@ layout (triangle_strip, max_vertices = 3*4) out;
 
 in vec3 g_for[];
 
-// flat out vec3 f_color;
 flat out int f_color;
 
-// uniform mat4 u_projectionMatrix;
-// uniform mat4 u_viewMatrix;
 uniform mat4 u_mvp;
 
 uniform float u_boidSize = 0.12;
@@ -24,8 +21,6 @@ void main() {
 
     const float yaw = atan(g_for[0].z, g_for[0].x);
     const float pitch = abs(atan(sqrt(g_for[0].x*g_for[0].x + g_for[0].z*g_for[0].z), g_for[0].y)) - 3.141592/2;
-
-    // const float PI3 = ((2.0 * PI) / 3.0);
 
     const mat4 rotation_translation_mat = calcTranslateMat4(position) * (calcRotateMat4Y(yaw) * calcRotateMat4Z(pitch));
     const mat4 mvp = u_mvp * rotation_translation_mat;
