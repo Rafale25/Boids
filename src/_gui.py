@@ -17,9 +17,6 @@ def gui_newFrame(self):
     if changed:
         self.wnd.fullscreen = state
 
-    # changed, state = imgui.checkbox("Vsync", self.wnd._window.vsync)
-    # if changed:
-    #     self.wnd._window.set_vsync(state)
     changed, state = imgui.checkbox("Vsync", self.wnd.vsync)
     if changed:
         self.wnd.vsync = state
@@ -40,7 +37,6 @@ def gui_newFrame(self):
         max_value=500
     )
 
-    # imgui.text("Boid Count: {}".format(self.boid_count))
     changed, new_boid_count = imgui.drag_int(
         label="Boid Count",
         value=self.boid_count,

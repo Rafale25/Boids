@@ -57,9 +57,9 @@ void main() {
         );
 
         vec3 dir = normalize(vec3(
-            random_uniform(uint(index*u_time*2.383)) - 0.5,
-            random_uniform(uint(index*u_time*4.247)) - 0.5,
-            random_uniform(uint(index*u_time*5.917)) - 0.5
+            random_uniform(uint(index*u_time*2.38332)) - 0.5,
+            random_uniform(uint(index*u_time*4.2472)) - 0.5,
+            random_uniform(uint(index*u_time*5.817)) - 0.505 // to prevent first boid to go perfectly into oblivion
         ));
 
         b.pos.xyz = pos;

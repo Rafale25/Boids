@@ -11,7 +11,7 @@ import imgui
 import OpenGL as GL
 from OpenGL.GL import *
 
-from OpenGL.GL.NV.mesh_shader import glDrawMeshTasksNV
+# from OpenGL.GL.NV.mesh_shader import glDrawMeshTasksNV
 from OpenGL.GL.NV.mesh_shader import GL_MESH_SHADER_NV, GL_TASK_SHADER_NV
 
 
@@ -31,7 +31,7 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    log_level = logging.ERROR
+    # log_level = logging.ERROR
 
     @classmethod
     def add_arguments(cls, parser):
