@@ -7,7 +7,7 @@ class QueryManager:
         self.in_use_queries = []
 
     def __enter__(self):
-        if
+        # if
         pass
 
     def __exit__(self, type, value, traceback):
@@ -16,4 +16,4 @@ class QueryManager:
     def query_all():
         pass
 
-    def destroy_queries
+    # def destroy_queries
