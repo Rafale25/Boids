@@ -12,8 +12,7 @@ def resize(self, width: int, height: int):
 def key_event(self, key, action, modifiers):
     self.imgui.key_event(key, action, modifiers)
 
-    self._shift = (key == 65505 and action == self.wnd.keys.ACTION_PRESS)
-
+    self._shift = modifiers.shift
 
     if action == self.wnd.keys.ACTION_PRESS:
         if key == self.wnd.keys.SPACE:
