@@ -1,17 +1,8 @@
-import struct
-from math import ceil, log2, isnan, fmod
-from time import perf_counter
-
 from OpenGL import GL
+from math import ceil, log2, fmod
 
-# def program_run(self, program, x=0, y=1, z=1, debug=None):
-#     if self.query_enabled:
-#         with self.query:
-#             program.run(x, y, z)
-#         self.debug_values[debug] = self.query.elapsed * 10e-7
-#     else:
-#         program.run(x, y, z)
-#         self.debug_values[debug] = 0
+# import struct
+# from time import perf_counter
 
 def parallel_prefix_scan(self):
     group_x = ceil(float(self.boid_count) / 512) ## number of threads to run
@@ -45,10 +36,10 @@ def parallel_prefix_scan(self):
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
-        if 'u_viewMatrix' in program:
-            program['u_viewMatrix'].write(self.camera.matrix)
-        if 'u_projectionMatrix' in program:
-            program['u_projectionMatrix'].write(self.camera.projection.matrix)
+        # if 'u_viewMatrix' in program:
+        #     program['u_viewMatrix'].write(self.camera.matrix)
+        # if 'u_projectionMatrix' in program:
+        #     program['u_projectionMatrix'].write(self.camera.projection.matrix)
         if 'u_mvp' in program:
             program['u_mvp'].write(self.camera.projection.matrix * self.camera.matrix)
 
@@ -88,26 +79,21 @@ def update(self, time_since_start, frametime):
     x = ceil(float(self.boid_count) / self.local_size_x) ## number of threads to run
 
     self.buffer_cell_count_1.bind_to_storage_buffer(0)
-    # with self.query:
-    self.program['RESET_CELLS'].run(x)
-    # self.debug_values['RESET_CELLS'] = self.query.elapsed * 10e-7
+    with self.query_manager(name='reset (computeShader)', time=True):
+        self.program['RESET_CELLS'].run(x)
 
-    # self.ctx.error ## silence the glInvalidOperation error
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
-    # with self.query:
-    self.program['UPDATE_BOID_CELL_INDEX'].run(x)
-    # self.debug_values['UPDATE_BOID_CELL_INDEX'] = self.query.elapsed * 10e-7
-    # self.program_run(self.program['UPDATE_BOID_CELL_INDEX'], x=x, debug='UPDATE_BOID_CELL_INDEX')
+    with self.query_manager(name='update boid cell index (computeShader)', time=True):
+        self.program['UPDATE_BOID_CELL_INDEX'].run(x)
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count_1.bind_to_storage_buffer(1)
-    # with self.query:
-    self.program['INCREMENT_CELL_COUNTER'].run(x)
-    # self.debug_values['INCREMENT_CELL_COUNTER'] = self.query.elapsed * 10e-7
+    with self.query_manager(name='increment cell counter (computeShader)', time=True):
+        self.program['INCREMENT_CELL_COUNTER'].run(x)
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
@@ -118,13 +104,11 @@ def update(self, time_since_start, frametime):
     # t2 = perf_counter()
     # self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
 
-
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_boid_tmp.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
-    # with self.query:
-    self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
-    # self.debug_values['ATOMIC_INCREMENT_CELL_COUNT'] = self.query.elapsed * 10e-7
+    with self.query_manager(name='atomic increment cell count (computeShader)', time=True):
+        self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
     # self.ctx.finish()
@@ -133,9 +117,8 @@ def update(self, time_since_start, frametime):
     self.buffer_boid.bind_to_storage_buffer(1)
     self.buffer_cell_count_1.bind_to_storage_buffer(2)
 
-    # with self.query:
-    self.program[self.map_type].run(x, 1, 1)
-    # self.debug_values['boids compute'] = self.query.elapsed * 10e-7
+    with self.query_manager(name='boid simulation (computeShader)', time=True):
+        self.program[self.map_type].run(x, 1, 1)
 
 
 # data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)

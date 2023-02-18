@@ -11,18 +11,16 @@ import imgui
 import OpenGL as GL
 from OpenGL.GL import *
 
-# from OpenGL.GL.NV.mesh_shader import glDrawMeshTasksNV
 from OpenGL.GL.NV.mesh_shader import GL_MESH_SHADER_NV, GL_TASK_SHADER_NV
-
 
 import moderngl_window
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
 
-from ._mapType import MapType
+from ._enums import MapType, RenderMode
 from .utils import *
-from .query import Query
+from .query_manager import QueryManager
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -38,6 +36,7 @@ class MyWindow(moderngl_window.WindowConfig):
     def add_arguments(cls, parser):
         parser.add_argument('-BOID_COUNT', metavar='BOID_COUNT', type=int, default=1024, required=False)
         parser.add_argument('-MAP_SIZE', metavar='MAP_SIZE', type=int, default=20, required=False)
+        # https://stackoverflow.com/questions/55324449/how-to-specify-a-minimum-or-maximum-float-value-with-argparse
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -74,12 +73,12 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
         self._shift = False
-        self.render_mode = 1
+        self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
 
         ## Debug
         self.fps_counter = FpsCounter()
-        self.debug_values = {}
-        self.query = self.ctx.query(samples=False, time=True, primitives=True)
+        self.query_manager = QueryManager(ctx=self.ctx)
+        self.query_enabled = True
 
         ## ImGui --
         imgui.create_context()
@@ -87,7 +86,7 @@ class MyWindow(moderngl_window.WindowConfig):
 
 
         self.program = {
-            # 'BOIDS':
+            # 'BOIDS_INSTANCED':
             #     self.load_program(
             #         vertex_shader='./shaders/boids/render/boid.vert',
             #         fragment_shader='./shaders/boids/render/boid.frag'),
@@ -99,7 +98,7 @@ class MyWindow(moderngl_window.WindowConfig):
                     fragment_shader='./shaders/boids/render/boid.frag'),
             'BOIDS_VS':
                 self.load_program(
-                    vertex_shader='./shaders/boids/render/boid_vs2.vert',
+                    vertex_shader='./shaders/boids/render/boid_vs.vert',
                     fragment_shader='./shaders/boids/render/boid.frag'),
 
             'RESET_CELLS':

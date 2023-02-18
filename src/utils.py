@@ -15,7 +15,7 @@ def random_uniform_vec3(): # vector from 2 angles
     return (x, y, z)
 
 class FpsCounter:
-    NB_SAMPLE = 30
+    NB_SAMPLE = 40
 
     def __init__(self):
         self.fps_data = [0] * FpsCounter.NB_SAMPLE

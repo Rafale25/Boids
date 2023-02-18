@@ -8,8 +8,11 @@ def gui_newFrame(self):
     imgui.begin('Properties', True)
 
     imgui.text('fps: {:.2f}'.format(self.fps_counter.get_fps()))
-    for query, value in self.debug_values.items():
-        imgui.text('{}: {:.3f} ms'.format(query, value))
+
+    changed, self.query_manager.enabled = imgui.checkbox('Query', self.query_manager.enabled)
+
+    for r in self.query_manager.queries_result:
+        imgui.text('{}: {:.3f} ms'.format(r['name'], r['elapsed']))
 
     changed, self.pause = imgui.checkbox('Paused', self.pause)
 
@@ -21,7 +24,6 @@ def gui_newFrame(self):
     if changed:
         self.wnd.vsync = state
 
-    # changed, self.query_enabled = imgui.checkbox('Query', self.query_enabled)
 
     imgui.new_line()
 
@@ -30,7 +32,7 @@ def gui_newFrame(self):
     )
 
     changed, self.render_mode = imgui.combo(
-        'Render mode', self.render_mode, ['geometry_shader', 'mesh_shader']
+        'Render mode', self.render_mode, ['geometry_shader', 'vertex_shader', 'mesh_shader']
     )
 
     changed, self.map_size = imgui.drag_int(
