@@ -111,7 +111,6 @@ def update(self, time_since_start, frametime):
         self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
 
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
-    # self.ctx.finish()
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)

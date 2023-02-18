@@ -21,7 +21,6 @@ def key_event(self, key, action, modifiers):
 def mouse_position_event(self, x, y, dx, dy):
     self.imgui.mouse_position_event(x, y, dx, dy)
 
-
 def mouse_drag_event(self, x, y, dx, dy):
     self.imgui.mouse_drag_event(x, y, dx, dy)
 

@@ -16,27 +16,24 @@ def render(self, time_since_start, frametime):
 
     self.compass.render(program=self.program['LINES'])
 
+    if self.map_type in (MapType.MAP_CUBE, MapType.MAP_CUBE_T):
+        self.borders.render(program=self.program['BORDER'])
 
     if self.render_mode == RenderMode.GEOMETRY_SHADER:
 
         self.buffer_boid.bind_to_storage_buffer(0)
         with self.query_manager(name='boids (geometry shader)', time=True):
-            self.ctx.error
             self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
-        self.ctx.error
 
     elif self.render_mode == RenderMode.VERTEX_SHADER:
         self.buffer_boid.bind_to_storage_buffer(0)
         with self.query_manager(name='boids (vertex shader)', time=True):
-            self.ctx.error
             self.vao_vs.render(mode=moderngl.TRIANGLES, vertices=self.boid_count*4*3) ## slightly worse than geometry shader approach
-        self.ctx.error
 
     elif self.render_mode == RenderMode.MESH_SHADER:
 
         self.buffer_boid.bind_to_storage_buffer(0)
         glUseProgram(self.meshProgram)
-
         mvp_loc = glGetUniformLocation(self.meshProgram, "u_mvp")
         boidsize_loc = glGetUniformLocation(self.meshProgram, "u_boidSize")
         glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, self.camera.projection.matrix * self.camera.matrix)
@@ -44,12 +41,7 @@ def render(self, time_since_start, frametime):
         num_workgroups = ceil(float(self.boid_count) / 16)
 
         with self.query_manager(name='boids (mesh shader)', time=True):
-            self.ctx.error
             glDrawMeshTasksNV(0, num_workgroups)
-        self.ctx.error
-
-    if self.map_type in (MapType.MAP_CUBE, MapType.MAP_CUBE_T):
-        self.borders.render(program=self.program['BORDER'])
 
     self.query_manager.query_all()
 

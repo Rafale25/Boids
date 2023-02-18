@@ -2,7 +2,7 @@ from math import ceil
 from OpenGL import GL
 
 def resize_boids_buffer(self, old_count, new_count):
-    self.buffer_boid_tmp.orphan(new_count * 32)
+    self.buffer_boid_tmp.orphan(new_count * 32) # 32 is size of boid struct
 
     x = ceil(float(new_count) / self.local_size_x)
 
@@ -13,7 +13,6 @@ def resize_boids_buffer(self, old_count, new_count):
     self.program['RESIZE']['u_new_boid_count'] = new_count
     self.program['RESIZE'].run(x)
 
-    # self.ctx.error
     GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid.orphan(new_count * 32)
