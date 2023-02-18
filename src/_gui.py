@@ -121,7 +121,8 @@ def gui_newFrame(self):
         self.set_custom_profile_1()
     imgui.end_group()
 
-    imgui.set_window_font_scale(2.0)
+    imgui.get_io().font_global_scale = 2.0
+
     imgui.end()
 
 def gui_draw(self):
