@@ -50,7 +50,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.map_size = self.argv.MAP_SIZE
         self.map_type = MapType.MAP_CUBE
 
-        self.boid_count = self.argv.BOID_COUNT#next_power_of_2(self.argv.BOID_COUNT)#2**16 ## must be a power of 2
+        self.boid_count = self.argv.BOID_COUNT
         self.view_angle = pi/2
         self.view_distance = 2.0
         self.speed = 0.0 #0.050
