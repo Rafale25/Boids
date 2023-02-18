@@ -170,13 +170,6 @@ class MyWindow(moderngl_window.WindowConfig):
         self.program['RESIZE']['u_time'] = 1.0
         self.resize_boids_buffer(old_count=0, new_count=self.boid_count)
 
-        # can't do that yet because x4/i not supported by moderngl-window==2.4.0
-        # self.vbo = self.ctx.buffer(vertices)
-        # self.vao = VAO(mode=moderngl.TRIANGLES)
-        # self.vao.buffer(self.boid_vertices, '3f', ['in_position'])
-        # self.vao.buffer(self.boid_color, '3f', ['in_color'])
-        # self.vao.buffer(self.buffer_1, '3f x4 3f x4/i', ['in_pos', 'in_for'])
-
         # ----
 
         def check_compile_error(id, type):
@@ -214,6 +207,12 @@ class MyWindow(moderngl_window.WindowConfig):
         check_compile_error(self.meshProgram, 'PROGRAM')
         # ----
 
+        # can't do that yet because x4/i not supported by moderngl-window==2.4.0
+        # self.vbo = self.ctx.buffer(vertices)
+        # self.vao = VAO(mode=moderngl.TRIANGLES)
+        # self.vao.buffer(self.boid_vertices, '3f', ['in_position'])
+        # self.vao.buffer(self.boid_color, '3f', ['in_color'])
+        # self.vao.buffer(self.buffer_boid, '3f 1x4 3f 1x4', ['in_pos', 'in_for'])
 
         ## geometry shader
         self.vao_gs = self.ctx.vertex_array(
@@ -311,8 +310,4 @@ class MyWindow(moderngl_window.WindowConfig):
 
     from ._render import render
     from ._update import update, parallel_prefix_scan
-
-    from ._sort import sort
-
-    from ._cleanup import cleanup
 
