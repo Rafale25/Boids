@@ -1,11 +1,11 @@
 import moderngl
 
-from ._enums import MapType, RenderMode
+from math import ceil
 
 from OpenGL.GL import *
 from OpenGL.GL.NV.mesh_shader import glDrawMeshTasksNV
 
-from math import ceil
+from ._enums import MapType, RenderMode
 
 def render(self, time_since_start, frametime):
     self.fps_counter.update(frametime)
@@ -23,7 +23,8 @@ def render(self, time_since_start, frametime):
 
         self.buffer_boid.bind_to_storage_buffer(0)
         with self.query_manager(name='boids (geometry shader)', time=True):
-            self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
+            self.vao_gs.render(program=self.program['BOIDS_GS'], mode=moderngl.POINTS, vertices=self.boid_count)
+            # self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
 
     elif self.render_mode == RenderMode.VERTEX_SHADER:
         self.buffer_boid.bind_to_storage_buffer(0)

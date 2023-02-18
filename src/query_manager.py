@@ -14,7 +14,6 @@ class QueryManager:
 
         self.queries_result = []
 
-
     def create_query(self):
         query = self.ctx.query(**self.args['kwargs'])
         self.query_pool.append(query)
