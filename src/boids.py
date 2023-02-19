@@ -222,10 +222,10 @@ class MyWindow(moderngl_window.WindowConfig):
 
 
         ## geometry shader
-        self.vao_gs = VAO(mode=moderngl.TRIANGLES)
+        self.vao_gs = VAO(mode=moderngl.POINTS)
         self.vao_gs.buffer(self.buffer_boid, '4f 4f', ['in_pos', 'in_for'])
         # can't do that yet because x4/i not supported by moderngl-window==2.4.2
-        # self.vao.buffer(self.buffer_boid, '3f 1x4 3f 1x4', ['in_pos', 'in_for'])
+        # self.vao_gs.buffer(self.buffer_boid, '3f 1x4 3f 1x4', ['in_pos', 'in_for'])
 
         ## vertex shader pulling
         self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
