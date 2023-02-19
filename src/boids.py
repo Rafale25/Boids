@@ -22,6 +22,8 @@ from ._enums import MapType, RenderMode
 from .utils import *
 from .query_manager import QueryManager
 
+import glfw
+
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
@@ -31,6 +33,7 @@ class MyWindow(moderngl_window.WindowConfig):
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
     log_level = logging.ERROR
+    aspect_ratio = None
 
     @classmethod
     def add_arguments(cls, parser):
@@ -41,6 +44,12 @@ class MyWindow(moderngl_window.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.ctx.gc_mode = "auto"
+
+        print(self.wnd.pixel_ratio)
+        print(self.wnd.size)
+
+        monitor = glfw.get_primary_monitor()
+        self.monitor_content_scale = glfw.get_monitor_content_scale(monitor)[0]
 
         self.pause = False
 
@@ -84,6 +93,10 @@ class MyWindow(moderngl_window.WindowConfig):
         imgui.create_context()
         self.imgui = ModernglWindowRenderer(self.wnd)
 
+        # print(self.wnd.size)
+        # self.resize(*self.wnd.size)
+
+        # self.wnd.width = 800
 
         self.program = {
             # 'BOIDS_INSTANCED':

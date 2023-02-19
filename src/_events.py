@@ -1,11 +1,13 @@
-from math import pi
-
-import glm
 import imgui
 
-from .utils import *
-
 def resize(self, width: int, height: int):
+    # monitor = glfw.get_primary_monitor()
+    # print(glfw.get_window_size(self.wnd._window))
+    # print(glfw.get_framebuffer_size(self.wnd._window))
+    # print(self.wnd.pixel_ratio)
+    # print(glfw.get_window_content_scale(self.wnd._window))
+    # print()
+
     self.imgui.resize(width, height)
     self.camera.projection.update(aspect_ratio=self.wnd.aspect_ratio)
 
