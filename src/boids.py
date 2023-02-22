@@ -191,8 +191,8 @@ class MyWindow(moderngl_window.WindowConfig):
                 if not status:
                     print(glGetProgramInfoLog(id))
 
-        # GL_TASK_SHADER_NV
-        mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
+
+        mesh_shader = glCreateShader(GL_MESH_SHADER_NV) # GL_TASK_SHADER_NV
         glShaderSource(
             mesh_shader,
             Path('./assets/shaders/boids/render/mesh_shader/boid.mesh').read_text(),
