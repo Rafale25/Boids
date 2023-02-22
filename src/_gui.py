@@ -32,7 +32,7 @@ def gui_newFrame(self):
     )
 
     changed, self.render_mode = imgui.combo(
-        'Render mode', self.render_mode, ['geometry_shader', 'vertex_shader', 'mesh_shader']
+        'Render mode', self.render_mode, ['geometry_shader', 'vertex_shader', 'mesh_shader', 'instanced']
     )
 
     changed, self.map_size = imgui.drag_int(

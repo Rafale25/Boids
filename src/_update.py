@@ -36,10 +36,6 @@ def parallel_prefix_scan(self):
 
 def update(self, time_since_start, frametime):
     for _, program in self.program.items():
-        # if 'u_viewMatrix' in program:
-        #     program['u_viewMatrix'].write(self.camera.matrix)
-        # if 'u_projectionMatrix' in program:
-        #     program['u_projectionMatrix'].write(self.camera.projection.matrix)
         if 'u_mvp' in program:
             program['u_mvp'].write(self.camera.projection.matrix * self.camera.matrix)
 
@@ -47,6 +43,7 @@ def update(self, time_since_start, frametime):
 
     self.program['BOIDS_VS']['u_boidSize'] = self.boid_size
     self.program['BOIDS_GS']['u_boidSize'] = self.boid_size
+    self.program['BOIDS_INSTANCED']['u_boidSize'] = self.boid_size
     self.program['BORDER']['map_size'] = self.map_size
 
     if self.pause:

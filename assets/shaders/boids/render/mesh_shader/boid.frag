@@ -2,7 +2,6 @@
 
 in PerVertexData
 {
-    // vec4 color;
     flat int color;
 } fragIn;
 
@@ -18,6 +17,4 @@ vec3 unpackColor(int rgb) {
 
 void main() {
     fragColor = vec4(unpackColor(fragIn.color), 1.0);
-    // fragColor = fragIn.color;
-    // fragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }

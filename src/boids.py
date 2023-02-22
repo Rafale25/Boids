@@ -82,7 +82,8 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
         self._shift = False
-        self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
+        # self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
+        self.render_mode = RenderMode.INSTANCED ## mesh shader if support otherwise geometry shader
 
         ## Debug
         self.fps_counter = FpsCounter()
@@ -93,25 +94,20 @@ class MyWindow(moderngl_window.WindowConfig):
         imgui.create_context()
         self.imgui = ModernglWindowRenderer(self.wnd)
 
-        # print(self.wnd.size)
-        # self.resize(*self.wnd.size)
-
-        # self.wnd.width = 800
-
         self.program = {
-            # 'BOIDS_INSTANCED':
-            #     self.load_program(
-            #         vertex_shader='./shaders/boids/render/boid.vert',
-            #         fragment_shader='./shaders/boids/render/boid.frag'),
+            'BOIDS_INSTANCED':
+                self.load_program(
+                    vertex_shader='./shaders/boids/render/instanced/boid.vert',
+                    fragment_shader='./shaders/boids/render/instanced/boid.frag'),
 
             'BOIDS_GS':
                 self.load_program(
-                    vertex_shader='./shaders/boids/render/boid_gs.vert',
-                    geometry_shader='./shaders/boids/render/boid_gs.geom',
+                    vertex_shader='./shaders/boids/render/geometry_shader/boid.vert',
+                    geometry_shader='./shaders/boids/render/geometry_shader/boid.geom',
                     fragment_shader='./shaders/boids/render/boid.frag'),
             'BOIDS_VS':
                 self.load_program(
-                    vertex_shader='./shaders/boids/render/boid_vs.vert',
+                    vertex_shader='./shaders/boids/render/vertex_shader/boid.vert',
                     fragment_shader='./shaders/boids/render/boid.frag'),
 
             'RESET_CELLS':
@@ -199,7 +195,7 @@ class MyWindow(moderngl_window.WindowConfig):
         mesh_shader = glCreateShader(GL_MESH_SHADER_NV)
         glShaderSource(
             mesh_shader,
-            Path('./assets/shaders/boids/render/boid_meshShader.glsl').read_text(),
+            Path('./assets/shaders/boids/render/mesh_shader/boid.mesh').read_text(),
         )
         glCompileShader(mesh_shader)
         check_compile_error(mesh_shader, 'MESH')
@@ -207,7 +203,7 @@ class MyWindow(moderngl_window.WindowConfig):
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
         glShaderSource(
             fragment_shader,
-            Path('./assets/shaders/boids/render/boid_mesh.frag').read_text(),
+            Path('./assets/shaders/boids/render/mesh_shader/boid.frag').read_text(),
         )
         glCompileShader(fragment_shader)
         check_compile_error(fragment_shader, 'FRAGMENT')
@@ -220,15 +216,43 @@ class MyWindow(moderngl_window.WindowConfig):
         check_compile_error(self.meshProgram, 'PROGRAM')
         # ----
 
-
         ## geometry shader
         self.vao_gs = VAO(mode=moderngl.POINTS)
         self.vao_gs.buffer(self.buffer_boid, '4f 4f', ['in_pos', 'in_for'])
-        # can't do that yet because x4/i not supported by moderngl-window==2.4.2
-        # self.vao_gs.buffer(self.buffer_boid, '3f 1x4 3f 1x4', ['in_pos', 'in_for'])
+        # self.vao_gs.buffer(self.buffer_boid, '3f 1x4 3f 1x4', ['in_pos', 'in_for'])  # can't do that yet because x4/i not supported by moderngl-window==2.4.2
 
         ## vertex shader pulling
         self.vao_vs = self.ctx.vertex_array(self.program['BOIDS_VS'], [])
+
+        ## instancing
+        pi3 = (2*pi / 3)
+        vertices = array('f',
+            [
+                -1.0, (cos(pi3 * 0.0)) * 0.5, (sin(pi3 * 0.0)) * 0.5, #corner 1
+                -1.0, (cos(pi3 * 2.0)) * 0.5, (sin(pi3 * 2.0)) * 0.5, #corner 2
+                -1.0, (cos(pi3 * 1.0)) * 0.5, (sin(pi3 * 1.0)) * 0.5, #corner 3
+                2.0, 0.0, 0.0, #TOP
+            ])
+        indices = array('i',
+            [
+                1, 2, 0,
+                3, 0, 2,
+                3, 2, 1,
+                1, 0, 3,
+            ])
+        colors = array('f',
+        [
+            1, 0, 0,
+            0, 0, 1,
+            0, 1, 0,
+            0, 1, 1,
+        ])
+
+        self.vao_instanced = VAO(mode=moderngl.TRIANGLES)
+        self.vao_instanced.buffer(self.ctx.buffer(vertices), '3f', ['in_vertex'])
+        self.vao_instanced.buffer(self.ctx.buffer(colors), '3f', ['in_color'])
+        self.vao_instanced.index_buffer(self.ctx.buffer(indices))
+        self.vao_instanced.buffer(self.buffer_boid, '4f 4f/i', ['in_pos', 'in_for'])
 
 
         ## Compass --------------------------------------------------------
@@ -243,7 +267,6 @@ class MyWindow(moderngl_window.WindowConfig):
             0.0, 0.0, 0.0,
             0.0, 0.0, 1.0,
         ])
-
         color = array('f',
         [
             1.0, 0.0, 0.0,
@@ -266,45 +289,35 @@ class MyWindow(moderngl_window.WindowConfig):
         [
             -0.5, -0.5, -0.5,
             0.5, -0.5, -0.5,
-
             -0.5, -0.5, 0.5,
             0.5, -0.5, 0.5,
-
             -0.5, 0.5, 0.5,
             0.5, 0.5, 0.5,
-
             -0.5, 0.5, -0.5,
             0.5, 0.5, -0.5,
-
-            -0.5, -0.5, -0.5,
-            -0.5, 0.5, -0.5,
-
-            -0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
-
-            0.5, -0.5, -0.5,
-            0.5, 0.5, -0.5,
-
-            0.5, -0.5, 0.5,
-            0.5, 0.5, 0.5,
-
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
-
-            -0.5, 0.5, -0.5,
-            -0.5, 0.5, 0.5,
-
-            0.5, -0.5, -0.5,
-            0.5, -0.5, 0.5,
-
-            0.5, 0.5, -0.5,
-            0.5, 0.5, 0.5,
         ])
-        color = array('f', [0.30, 0.30, 0.30]*24)
+        indices = array('i',
+        [
+            0, 1,
+            0, 2,
+            1, 3,
+            2, 3,
+
+            0, 6,
+            1, 7,
+            2, 4,
+            3, 5,
+
+            6, 7,
+            5, 7,
+            4, 5,
+            4, 6,
+        ])
 
         self.borders = VAO(mode=moderngl.LINES)
         self.borders.buffer(self.ctx.buffer(vertices), '3f', ['in_position'])
-        self.borders.buffer(self.ctx.buffer(color), '3f', ['in_color'])
+        # self.borders.buffer(self.ctx.buffer(color), '3f', ['in_color'])
+        self.borders.index_buffer(self.ctx.buffer(indices))
 
     def get_boid_buffer_size(self):
         return next_power_of_2(self.boid_count)

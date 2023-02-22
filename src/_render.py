@@ -19,21 +19,21 @@ def render(self, time_since_start, frametime):
     if self.map_type in (MapType.MAP_CUBE, MapType.MAP_CUBE_T):
         self.borders.render(program=self.program['BORDER'])
 
-    if self.render_mode == RenderMode.GEOMETRY_SHADER:
+    self.buffer_boid.bind_to_storage_buffer(0)
 
-        self.buffer_boid.bind_to_storage_buffer(0)
+    if self.render_mode == RenderMode.GEOMETRY_SHADER:
         with self.query_manager(name='boids (geometry shader)', time=True):
             self.vao_gs.render(program=self.program['BOIDS_GS'], mode=moderngl.POINTS, vertices=self.boid_count)
-            # self.vao_gs.render(mode=moderngl.POINTS, vertices=self.boid_count)
 
     elif self.render_mode == RenderMode.VERTEX_SHADER:
-        self.buffer_boid.bind_to_storage_buffer(0)
         with self.query_manager(name='boids (vertex shader)', time=True):
             self.vao_vs.render(mode=moderngl.TRIANGLES, vertices=self.boid_count*4*3) ## slightly worse than geometry shader approach
 
-    elif self.render_mode == RenderMode.MESH_SHADER:
+    elif self.render_mode == RenderMode.INSTANCED:
+        with self.query_manager(name='boids (instanced)', time=True):
+            self.vao_instanced.render(program=self.program['BOIDS_INSTANCED'], instances=self.boid_count)
 
-        self.buffer_boid.bind_to_storage_buffer(0)
+    elif self.render_mode == RenderMode.MESH_SHADER:
         glUseProgram(self.meshProgram)
         mvp_loc = glGetUniformLocation(self.meshProgram, "u_mvp")
         boidsize_loc = glGetUniformLocation(self.meshProgram, "u_boidSize")

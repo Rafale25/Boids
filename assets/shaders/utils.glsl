@@ -39,6 +39,13 @@ int packColor(vec3 color) {
     packedColor |= int(color.r*255) << 16;
     packedColor |= int(color.g*255) << 8;
     packedColor |= int(color.b*255);
-
     return packedColor;
+}
+
+vec3 unpackColor(int rgb) {
+    vec3 color;
+    color.r = (rgb >> 16) & 255;
+    color.g = (rgb >> 8) & 255;
+    color.b = (rgb) & 255;
+    return color / 255.0;
 }
