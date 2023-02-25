@@ -32,8 +32,8 @@ class MyWindow(moderngl_window.WindowConfig):
     resizable = True
     vsync = True
     resource_dir = (Path(__file__) / "../../assets").resolve()
-    log_level = logging.ERROR
     aspect_ratio = None
+    # log_level = logging.ERROR
 
     @classmethod
     def add_arguments(cls, parser):
@@ -82,8 +82,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
         self._shift = False
-        # self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
-        self.render_mode = RenderMode.INSTANCED ## mesh shader if support otherwise geometry shader
+        self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
 
         ## Debug
         self.fps_counter = FpsCounter()
