@@ -35,13 +35,10 @@ class QueryManager:
     def __enter__(self):
         query = self.use_query()
         self.in_use_queries.append( (self.args['name'], self.args['kwargs'], query) )
-
         self.current_query.mglo.begin()
-        self.ctx.error  ## silence the glInvalidOperation error ## TODO: remove when error fixed
 
     def __exit__(self, type, value, traceback):
         self.current_query.mglo.end()
-        self.ctx.error
 
         self.current_query = None
 
