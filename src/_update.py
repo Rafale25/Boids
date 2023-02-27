@@ -1,4 +1,4 @@
-from OpenGL import GL
+import moderngl
 from math import ceil, log2, fmod
 
 # import struct
@@ -26,7 +26,7 @@ def parallel_prefix_scan(self):
         self.program['PREFIX_SUM'].run(group_x)
         # self.debug_values[f'PREFIX SUM {i}'] = self.query.elapsed * 10e-7
 
-        GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
+        self.ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT)
 
         c = 1 - c
 
@@ -35,6 +35,8 @@ def parallel_prefix_scan(self):
         self.buffer_cell_count_1, self.buffer_cell_count_2 = self.buffer_cell_count_2, self.buffer_cell_count_1
 
 def update(self, time_since_start, frametime):
+    ctx = self.ctx
+
     for _, program in self.program.items():
         if 'u_mvp' in program:
             program['u_mvp'].write(self.camera.projection.matrix * self.camera.matrix)
@@ -79,25 +81,26 @@ def update(self, time_since_start, frametime):
     with self.query_manager(name='reset (computeShader)', time=True):
         self.program['RESET_CELLS'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
+    ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
 
     self.buffer_boid.bind_to_storage_buffer(0)
     with self.query_manager(name='update boid cell index (computeShader)', time=True):
         self.program['UPDATE_BOID_CELL_INDEX'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
+    ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid.bind_to_storage_buffer(0)
     self.buffer_cell_count_1.bind_to_storage_buffer(1)
     with self.query_manager(name='increment cell counter (computeShader)', time=True):
         self.program['INCREMENT_CELL_COUNTER'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
+    ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT)
 
     # t1 = perf_counter()
     self.parallel_prefix_scan()
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT)
-    # self.ctx.finish()
+    ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT)
+
+    # ctx.finish()
     # t2 = perf_counter()
     # self.debug_values['PARALLEL PREFIX SCAN'] = (t2 - t1) * 1000
 
@@ -107,7 +110,7 @@ def update(self, time_since_start, frametime):
     with self.query_manager(name='atomic increment cell count (computeShader)', time=True):
         self.program['ATOMIC_INCREMENT_CELL_COUNT'].run(x)
 
-    GL.glMemoryBarrier(GL.GL_SHADER_STORAGE_BARRIER_BIT) ## way better than ctx.finish()
+    ctx.memory_barrier(moderngl.SHADER_STORAGE_BARRIER_BIT)
 
     self.buffer_boid_tmp.bind_to_storage_buffer(0)
     self.buffer_boid.bind_to_storage_buffer(1)
@@ -115,23 +118,3 @@ def update(self, time_since_start, frametime):
 
     with self.query_manager(name='boid simulation (computeShader)', time=True):
         self.program[self.map_type].run(x, 1, 1)
-
-
-# data = self.buffer_boid_tmp.read_chunks(chunk_size=8*4, start=0, step=8*4, count=self.boid_count)
-# data = struct.iter_unpack('fffIffff', data)
-# data = [v for v in data]
-# if any(isnan(x[0]) for x in data):
-#     print('ISNAN')
-#     exit()
-# for d in data:
-#     print(d)
-# print(data)
-
-# data = self.buffer_cell_count_1.read_chunks(chunk_size=1*4, start=0, step=1*4, count=self.boid_count)
-# data = struct.iter_unpack('I', data)
-# data = [v[0] for v in data]
-# print(data)
-# print(sum(data))
-
-# is_sorted = all(data[i] <= data[i+1] for i in range(len(data) - 1))
-# print("sorted: {}".format(is_sorted))
