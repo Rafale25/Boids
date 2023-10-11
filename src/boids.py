@@ -27,7 +27,7 @@ import glfw
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
-    window_size = (1280, 720) ## TODO: Fix resolution with high DPI
+    window_size = (1920, 1080) ## TODO: Fix resolution with high DPI
     fullscreen = False
     resizable = True
     vsync = True

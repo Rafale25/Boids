@@ -26,13 +26,14 @@ def mouse_position_event(self, x, y, dx, dy):
 def mouse_drag_event(self, x, y, dx, dy):
     self.imgui.mouse_drag_event(x, y, dx, dy)
 
-    io = imgui.get_io()
-    if io.want_capture_mouse: return
+    if imgui.get_io().want_capture_mouse: return
 
     self.camera.rot_state(dx, dy)
 
 def mouse_scroll_event(self, x_offset, y_offset):
     self.imgui.mouse_scroll_event(x_offset, y_offset)
+
+    if imgui.get_io().want_capture_mouse: return
 
     if self._shift:
         y_offset *= 4
