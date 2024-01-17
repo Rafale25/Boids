@@ -1,12 +1,10 @@
 pip install -r requirements.txt
 
 run the program:\
-python3 main.py
-
-*using billion of boids make you able to clean install any os*
+python main.py
 
 here's a video of the program
-https://youtu.be/C1F_fxJrTpA
+https://youtu.be/-TCiuQOiyiE
 
 here's an older one
 https://youtu.be/lZUsVdE_Lps
@@ -21,3 +19,5 @@ https://youtu.be/lZUsVdE_Lps
 ![Alt text](./screenshots/screenshot4.png?raw=true)
 
 ![Alt text](./screenshots/screenshot5.png?raw=true)
+
+*using billion of boids make you able to clean install any os*
