@@ -8,9 +8,7 @@ import logging
 import moderngl
 import imgui
 
-import OpenGL as GL
 from OpenGL.GL import *
-
 from OpenGL.GL.NV.mesh_shader import GL_MESH_SHADER_NV, GL_TASK_SHADER_NV
 
 import moderngl_window
@@ -36,6 +34,13 @@ def PATH(path):
     except:
         return path
 
+def getGLExtentions():
+    numExt = glGetIntegerv(GL_NUM_EXTENSIONS)
+    extensions = []
+    for i in range(numExt):
+        extensions.append(glGetStringi(GL_EXTENSIONS, i).decode())
+    return extensions
+
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
     gl_version = (4, 3)
@@ -59,6 +64,9 @@ class MyWindow(moderngl_window.WindowConfig):
 
         print(self.wnd.pixel_ratio)
         print(self.wnd.size)
+
+        self.glExtentions = getGLExtentions()
+        self.meshShaderIsSupported = 'GL_NV_mesh_shader' in self.glExtentions
 
         monitor = glfw.get_primary_monitor()
         self.monitor_content_scale = glfw.get_monitor_content_scale(monitor)[0]
@@ -94,7 +102,7 @@ class MyWindow(moderngl_window.WindowConfig):
         self.camera.mouse_sensitivity = 1.0
         self.camera.zoom_sensitivity = 0.5
         self._shift = False
-        self.render_mode = RenderMode.MESH_SHADER ## mesh shader if support otherwise geometry shader
+        self.render_mode = RenderMode.MESH_SHADER if self.meshShaderIsSupported else RenderMode.GEOMETRY_SHADER ## mesh shader if support otherwise geometry shader
 
         ## Debug
         self.fps_counter = FpsCounter()
@@ -204,29 +212,29 @@ class MyWindow(moderngl_window.WindowConfig):
                 if not status:
                     print(glGetProgramInfoLog(id))
 
+        if self.meshShaderIsSupported:
+            mesh_shader = glCreateShader(GL_MESH_SHADER_NV) # GL_TASK_SHADER_NV
+            glShaderSource(
+                mesh_shader,
+                Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.mesh')).read_text(),
+            )
+            glCompileShader(mesh_shader)
+            check_compile_error(mesh_shader, 'MESH')
 
-        mesh_shader = glCreateShader(GL_MESH_SHADER_NV) # GL_TASK_SHADER_NV
-        glShaderSource(
-            mesh_shader,
-            Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.mesh')).read_text(),
-        )
-        glCompileShader(mesh_shader)
-        check_compile_error(mesh_shader, 'MESH')
+            fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+            glShaderSource(
+                fragment_shader,
+                Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.frag')).read_text(),
+            )
+            glCompileShader(fragment_shader)
+            check_compile_error(fragment_shader, 'FRAGMENT')
 
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(
-            fragment_shader,
-            Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.frag')).read_text(),
-        )
-        glCompileShader(fragment_shader)
-        check_compile_error(fragment_shader, 'FRAGMENT')
+            self.meshProgram = glCreateProgram()
+            glAttachShader(self.meshProgram, mesh_shader)
+            glAttachShader(self.meshProgram, fragment_shader)
+            glLinkProgram(self.meshProgram)
 
-        self.meshProgram = glCreateProgram()
-        glAttachShader(self.meshProgram, mesh_shader)
-        glAttachShader(self.meshProgram, fragment_shader)
-        glLinkProgram(self.meshProgram)
-
-        check_compile_error(self.meshProgram, 'PROGRAM')
+            check_compile_error(self.meshProgram, 'PROGRAM')
         # ----
 
         ## geometry shader

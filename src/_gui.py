@@ -31,8 +31,13 @@ def gui_newFrame(self):
         'Map Type', self.map_type, ['CubeT', 'Cube', 'Sphere', 'SphereT']
     )
 
+    if self.meshShaderIsSupported:
+        renderModes = ['geometry_shader', 'vertex_shader', 'mesh_shader', 'instanced']
+    else:
+        renderModes = ['geometry_shader', 'vertex_shader', 'instanced']
+
     changed, self.render_mode = imgui.combo(
-        'Render mode', self.render_mode, ['geometry_shader', 'vertex_shader', 'mesh_shader', 'instanced']
+        'Render mode', self.render_mode, renderModes
     )
 
     changed, self.map_size = imgui.drag_int(

@@ -18,7 +18,8 @@ uniform float u_boidSize = 0.12;
 
 flat out int f_color;
 
-const vec4[] vertices = {
+/* don't use const because it throws error in some compilers */
+vec4[] vertices = {
     vec4(-1.0, 0.5, 0.0, 1.0),
     vec4(-1.0, -0.24999999987863702, -0.43301270196228825, 1.0),
     vec4(-1.0, -0.25000000006068146, 0.4330127018571849, 1.0),
@@ -56,7 +57,7 @@ const vec4[] vertices = {
     // vec4(-1.0, (cos(PI3 * 0.0)) * 0.5, (sin(PI3 * 0.0)) * 0.5, 1.0),
 };
 
-const int[] colors = {
+int[] colors = {
 // const vec3[] colors = {
     // back triangle
     packColor(vec3(1.0, 0.0, 0.0)),
