@@ -66,7 +66,7 @@ class MyWindow(moderngl_window.WindowConfig):
         print(self.wnd.size)
 
         self.glExtentions = getGLExtentions()
-        self.meshShaderIsSupported = 'GL_NV_mesh_shader' in self.glExtentions
+        self.meshShaderIsSupported = False#'GL_NV_mesh_shader' in self.glExtentions
 
         monitor = glfw.get_primary_monitor()
         self.monitor_content_scale = glfw.get_monitor_content_scale(monitor)[0]

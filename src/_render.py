@@ -33,7 +33,7 @@ def render(self, time_since_start, frametime):
         with self.query_manager(name='boids (instanced)', time=True):
             self.vao_instanced.render(program=self.program['BOIDS_INSTANCED'], instances=self.boid_count)
 
-    elif self.render_mode == RenderMode.MESH_SHADER:
+    elif self.render_mode == RenderMode.MESH_SHADER and self.meshShaderIsSupported:
         glUseProgram(self.meshProgram)
         mvp_loc = glGetUniformLocation(self.meshProgram, "u_mvp")
         boidsize_loc = glGetUniformLocation(self.meshProgram, "u_boidSize")
