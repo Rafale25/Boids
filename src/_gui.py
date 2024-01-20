@@ -5,7 +5,7 @@ from math import pi
 def gui_newFrame(self):
     imgui.new_frame()
 
-    imgui.begin('Properties', True)
+    imgui.begin('Properties', True, imgui.WINDOW_NO_SAVED_SETTINGS)
 
     imgui.text('fps: {:.2f}'.format(self.fps_counter.get_fps()))
 

@@ -14,6 +14,7 @@ from OpenGL.GL import *
 from OpenGL.GL.NV.mesh_shader import GL_MESH_SHADER_NV, GL_TASK_SHADER_NV
 
 import moderngl_window
+from moderngl_window.context.glfw import Window as glfwWindow
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene.camera import OrbitCamera
 from moderngl_window.opengl.vao import VAO
@@ -23,6 +24,17 @@ from .utils import *
 from .query_manager import QueryManager
 
 import glfw
+
+import os, sys
+import imgui
+
+# pyinstaller --onefile --hidden-import glcontext --collect-all pyglet --collect-all glfw --collect-all moderngl_window --add-data "assets;assets" --paths=D:\env\Lib\site-packages main.py
+
+def PATH(path):
+    try:
+        return os.path.join(sys._MEIPASS, path)
+    except:
+        return path
 
 class MyWindow(moderngl_window.WindowConfig):
     title = 'Boids Simulation 3D'
@@ -92,6 +104,8 @@ class MyWindow(moderngl_window.WindowConfig):
         ## ImGui --
         imgui.create_context()
         self.imgui = ModernglWindowRenderer(self.wnd)
+
+        print(self.monitor_content_scale, imgui.get_io().font_global_scale)
 
         self.program = {
             'BOIDS_INSTANCED':
@@ -194,7 +208,7 @@ class MyWindow(moderngl_window.WindowConfig):
         mesh_shader = glCreateShader(GL_MESH_SHADER_NV) # GL_TASK_SHADER_NV
         glShaderSource(
             mesh_shader,
-            Path('./assets/shaders/boids/render/mesh_shader/boid.mesh').read_text(),
+            Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.mesh')).read_text(),
         )
         glCompileShader(mesh_shader)
         check_compile_error(mesh_shader, 'MESH')
@@ -202,7 +216,7 @@ class MyWindow(moderngl_window.WindowConfig):
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
         glShaderSource(
             fragment_shader,
-            Path('./assets/shaders/boids/render/mesh_shader/boid.frag').read_text(),
+            Path(PATH('./assets/shaders/boids/render/mesh_shader/boid.frag')).read_text(),
         )
         glCompileShader(fragment_shader)
         check_compile_error(fragment_shader, 'FRAGMENT')
@@ -328,4 +342,3 @@ class MyWindow(moderngl_window.WindowConfig):
 
     from ._render import render
     from ._update import update, parallel_prefix_scan
-
