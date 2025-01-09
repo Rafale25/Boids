@@ -1,7 +1,7 @@
-pyglet==2.0.9
+pyglet==2.0.18
 PyOpenGL==3.1.7
-moderngl==5.8.2
-moderngl-window==2.4.4
-pyglm==2.7.0
+moderngl==5.11.1
+moderngl-window==2.4.6
+pyglm==2.7.2
 imgui==2.0.0
-glfw==2.6.2
+glfw==2.7.0
