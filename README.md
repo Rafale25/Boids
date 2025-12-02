@@ -1,12 +1,15 @@
+# Boids Simulation
+
 pip install -r requirements.txt
 
-run the program:\
 python main.py
 
-here's a video of the program
+___
+
+here's a video of the program (50'000)
 https://youtu.be/-TCiuQOiyiE
 
-here's an older one
+here's an older one (4'000'000)
 https://youtu.be/lZUsVdE_Lps
 
 
